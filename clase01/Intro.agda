@@ -61,7 +61,8 @@ suc m + n = suc (m + n)
 ----------------------------------------------
 {- Ejercicio : Definir la multiplicación -}
 _*_ :  ℕ → ℕ → ℕ
-m * n = {!  !}
+m * zero = zero
+m * suc n = m + m * n
 ----------------------------------------------
 
 infixl 6 _+_
@@ -112,14 +113,16 @@ rev (x ∷ xs) = snoc (rev xs) x
 --------------------------------------------------
 {- Ej : longitud de una lista -}
 length : {A : Set} → List A → ℕ
-length xs = {!!}
---------------------------------------------------
+length [] = 0
+length (x ∷ xs) = 1 + length xs
 
+-------------------------------------------------
 
 --------------------------------------------------
 {- Ej : concatenar dos listas -}
 _++_ : {A : Set} → List A → List A → List A
-xs ++ ys = {!!}
+[] ++ ys = ys
+x ∷ xs ++ ys = x ∷ (xs ++ ys)
 --------------------------------------------------
 
 infixr 4 _++_
@@ -151,8 +154,6 @@ En EDyAII lo probaríamos por inducción sobre fs (por ejemplo).
 
 
 
-
-
 {- Definimos el tipo Maybe -}
 data Maybe (A : Set) : Set where
      nothing : Maybe A
@@ -163,16 +164,6 @@ _!!_ : {A : Set} → List A → ℕ → Maybe A
 [] !! n = nothing
 (x ∷ xs) !! zero = just  x
 (x ∷ xs) !! suc n = xs !! n
-
-
-
-
-
-
-
-
-
-
 
 
 {- 
@@ -253,14 +244,16 @@ nat (suc n) = suc (nat n)
         de manera tal que nat x = nat (emb x)
 -}
 emb : {n : ℕ} → Fin n → Fin (suc n)
-emb = {!!}
+emb zero = zero
+emb (suc n) = suc (emb n) 
 
 {- Ej: inv me lleva de {0,1,...,n-1} a {n-1,..,1,0} -}
 inv : {n : ℕ} → Fin n → Fin n
-inv i = {!!}
+inv zero = max
+inv (suc i) = emb (inv i)
+
+
 -----------------------------------------------------------
-
-
 
 
 {- proyección para vectores -}
@@ -269,17 +262,10 @@ _!!'_ : {A : Set}{n : ℕ} → Vec A n → Fin n → A
 (x ∷ xs) !!' suc n = xs !!' n
 
 
-
-
-
 {- aplicación punto a punto para vectores -}
 appV : {A B : Set}{n : ℕ} → Vec (A → B) n → Vec A n → Vec B n
 appV [] [] = []
 appV (f ∷ fs) (x ∷ xs) = (f x) ∷ (appV fs xs)
-
-
-
-
 
 
 {- Estáticamente aseguramos que la proyección está bien definida -}
@@ -292,8 +278,9 @@ Matrix m n = Vec (Vector n) m
 
 -------------------------------------------------------
 {- Ej: multiplicación por un escalar -}
+
 _*v_ : {n : ℕ} → ℕ → Vector n → Vector n
-k *v ms = mapVec {!!} ms
+k *v ms = mapVec (λ x → k * x) ms
 
 v1 : Vector 3
 v1 = 1 ∷ 2 ∷ 3 ∷ []
@@ -303,7 +290,8 @@ test1 = 2 *v v1
 
 {- Ej: suma de vectores -}
 _+v_ : {n : ℕ} → Vector n → Vector n → Vector n
-ms +v ns = {!!}
+[] +v [] = []
+(m ∷ ms) +v (n ∷ ns) = m + n ∷ (ms +v ns)
 
 v2 : Vector 3
 v2 = 2 ∷ 3 ∷ 0 ∷ []
@@ -311,9 +299,18 @@ v2 = 2 ∷ 3 ∷ 0 ∷ []
 test2 : Vector 3
 test2 = v1 +v v2
 
+vector0 : {n : ℕ} → Vector n
+vector0 {zero} = []
+vector0 {suc i} = 0 ∷ vector0 {i}
+
+matrix0 : {m n : ℕ} → Matrix m n
+matrix0 {zero} {n} = []
+matrix0 {suc i} {n} = vector0 {n} ∷ matrix0 {i} {n} 
+
 {- Ej: multiplicación de un vector y una matriz -}
 _*vm_ : {m n : ℕ} → Vector m → Matrix m n → Vector n
-ms *vm nss = {!!}
+[] *vm [] = vector0
+(m ∷ ms) *vm (ns ∷ nss) = (m *v ns) +v (ms *vm nss)
 
 id3 : Matrix 3 3
 id3 = (1 ∷ 0 ∷ 0 ∷ []) 
@@ -326,7 +323,7 @@ test3 = v1 *vm id3
 
 {- Ej: multiplicación de matrices -}
 _*mm_ : {l m n : ℕ} → Matrix l m → Matrix m n → Matrix l n
-mss *mm nss = {!!}
+mss *mm nss = mapVec (λ ms → ms *vm nss) mss
 
 inv3 : Matrix 3 3
 inv3 = (0 ∷ 0 ∷ 1 ∷ []) 
@@ -338,8 +335,12 @@ test4 : Matrix 3 3
 test4 = inv3 *mm inv3
 
 {- Ej: transposición de matrices -}
+-- transpose : {n m : ℕ} → Matrix m n → Matrix n m
+-- transpose {n} {m} mss = mapVec (λ i → mapVec (λ j → (mss !!' j) !!' i) (enum m)) (enum n)
 transpose : {n m : ℕ} → Matrix m n → Matrix n m
-transpose m = {!!}
+transpose [] = matrix0
+transpose (x ∷ xs) = appV (mapVec _∷_ x) (transpose xs)
+
 
 ej5 : Matrix 3 3
 ej5 = ( 0 ∷ 1 ∷ 2 ∷ [])
@@ -350,10 +351,16 @@ ej5 = ( 0 ∷ 1 ∷ 2 ∷ [])
 test5 : Matrix 3 3
 test5 = transpose ej5
 
+ej5t : Matrix 3 3
+ej5t = ( 0 ∷ 3 ∷ 6 ∷ [])
+     ∷ ( 1 ∷ 4 ∷ 7 ∷ [])
+     ∷ ( 2 ∷ 5 ∷ 8 ∷ [])
+     ∷ []
+
 --------------------------------------------------
 {-
 Bajar el archivo del repositorio y hacer los ejercicios.
  git clone https://github.com/mjaskelioff/progcat.git
 
 -}
-  
+       
