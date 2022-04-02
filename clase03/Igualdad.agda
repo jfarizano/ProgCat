@@ -172,31 +172,85 @@ suma-equiv' x (suc y) =
 intentar que la prueba sea legible usando ≡-Reasoning
 -}
 +-comm : (m n : ℕ) → m + n ≡ n + m
-+-comm zero zero = refl
-+-comm zero (suc n) = cong suc (+-comm zero n)
-+-comm (suc m) zero = +0 (suc m)
-+-comm (suc m) (suc n) = 
-  begin
-   suc m + suc n
-  ≡⟨ +suc (suc m) n ⟩
-   suc (suc m + n)
-  ≡⟨ cong suc (+-comm (suc m) n) ⟩
-   suc (n + suc m)
++-comm m zero = +0 m
++-comm m (suc n) = 
+  begin 
+    m + suc n
+  ≡⟨ +suc m n ⟩
+    suc (m + n)
   ≡⟨ refl ⟩
-   suc n + suc m
+    suc m + n
+  ≡⟨ +-comm (suc m) n ⟩
+    n + suc m
+  ≡⟨ +suc n m ⟩
+    suc n + m 
   ∎
 
+-- λ x → m + x 
 +-assoc : (m n l : ℕ) → m + (n + l) ≡ (m + n) + l
-+-assoc m n l = {!!}
++-assoc m zero l = 
+  begin 
+    m + (zero + l)
+  ≡⟨ refl ⟩
+    m + l
+  ≡⟨ cong (λ x → x + l) (sym (+0 m)) ⟩
+    (m + zero) + l
+  ∎
++-assoc m (suc n) l = 
+  begin 
+    m + (suc n + l)
+  ≡⟨ refl ⟩
+    m + (suc (n + l))
+  ≡⟨ +suc m (n + l) ⟩
+    suc (m + (n + l))
+  ≡⟨ cong suc (+-assoc m n l) ⟩
+    suc ((m + n) + l)
+  ≡⟨ refl ⟩
+    suc (m + n) + l
+  ≡⟨ cong (λ x → x + l) (sym (+suc m n)) ⟩
+    (m + (suc n)) + l
+  ∎
 
 *0 : ∀ m → 0 ≡ m * 0
-*0 m = {!   !}
+*0 zero = refl
+*0 (suc m) = *0 m
 
 *suc : (m n : ℕ) → m + m * n ≡ m * suc n
-*suc m n = {!   !} 
+*suc zero n = refl
+*suc (suc m) n = 
+  begin 
+    (suc m) + (suc m) * n
+  ≡⟨ refl ⟩
+    (suc m) + (n + m * n)
+  ≡⟨ +-assoc (suc m) n (m * n) ⟩
+    (suc m + n) + m * n
+  ≡⟨ refl ⟩
+    (suc (m + n)) + m * n
+  ≡⟨ cong (λ x → suc x + m * n) (+-comm m n) ⟩
+    (suc (n + m)) + m * n
+  ≡⟨ refl ⟩
+    ((suc n) + m) + m * n
+  ≡⟨ sym (+-assoc (suc n) m (m * n)) ⟩
+    (suc n) + (m + m * n)
+  ≡⟨ cong (λ x → suc n + x) (*suc m n) ⟩
+    suc n + (m * suc n)
+  ≡⟨ refl ⟩
+    (suc m) * (suc n)  
+  ∎
 
 *-comm : (m n : ℕ) → m * n ≡ n * m
-*-comm m n = {!   !}
+*-comm zero n = *0 n
+*-comm (suc m) n = 
+  begin 
+    (suc m) * n
+  ≡⟨ refl ⟩
+    n + m * n
+  ≡⟨ cong (λ x → n + x) (*-comm m n) ⟩
+    n + n * m
+  ≡⟨ *suc n m ⟩
+    n * suc m
+  ∎ 
+
 
 {- 
 Decidibilidad 
@@ -271,20 +325,6 @@ respProp : {A : Set}{P : A → Set}{f : (a : A) → P a}{x y : A} →
         (q : x ≡ y) →
         subst P q (f x) ≡ f y
 respProp refl = refl
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ---------------------------------------------------------------------------------
@@ -373,10 +413,10 @@ _$- : {A : Set} {B : A → Set} → ((x : A) → B x) → ({x : A} → B x)
 f $- = f _
 
 implicit-extensionality : Extensionality → ExtensionalityImplicit
-implicit-extensionality ext f≅g = {!   !}
+implicit-extensionality ext f≅g = H.cong _$- (ext (λ x → refl) (λ x → f≅g))
 
 iext : ExtensionalityImplicit
-iext = {!   !}
+iext f≅g = H.cong _$- (ext (λ x → refl) (λ x → f≅g))
 
 
 --------------------------------------------------
@@ -392,24 +432,56 @@ open import Data.Sum
   div₂ : división por 2
 -}
 mod₂ : ℕ → ℕ 
-mod₂ n = {!   !}
+mod₂ zero = zero
+mod₂ (suc zero) = suc zero
+mod₂ (suc (suc n)) = mod₂ n
 
 div₂ : ℕ → ℕ
-div₂ n = {!   !}
+div₂ zero = zero
+div₂ (suc zero) = zero
+div₂ (suc (suc n)) = suc (div₂ n)
+
 
 {- Probar las sigfuientes propiedades: -}
 
 mod₂Lem : (n : ℕ) → (mod₂ n ≡ 0) ⊎ (mod₂ n ≡ 1)
-mod₂Lem n = {!   !}
+mod₂Lem zero = inj₁ refl
+mod₂Lem (suc zero) = inj₂ refl
+mod₂Lem (suc (suc n)) = mod₂Lem n
 
 div₂Lem : ∀ {n} → 2 * (div₂ n) + mod₂ n ≡ n
-div₂Lem {n} = {!   !}
+div₂Lem {zero} = refl
+div₂Lem {suc zero} = refl
+div₂Lem {suc (suc n)} = 
+  begin 
+    2 * (div₂ (suc (suc n))) + mod₂ (suc (suc n))
+  ≡⟨ refl ⟩
+  2 * (div₂ (suc (suc n))) + mod₂ n
+  ≡⟨ refl ⟩
+  2 * (suc (div₂ n)) + mod₂ n
+  ≡⟨ cong (λ x → x + mod₂ n) (sym (*suc 2 (div₂ n))) ⟩
+  (2 + 2 * div₂ n) + mod₂ n
+  ≡⟨ +-assoc 2 (2 * div₂ n) (mod₂ n) ⟩
+  2 + (2 * div₂ n + mod₂ n)
+  ≡⟨ cong (λ x → 2 + x) div₂Lem ⟩
+  2 + n
+  ≡⟨ refl ⟩
+  (suc (suc n))
+  ∎
 
 {- Mostrar que la igualdad modulo 2 es decidible -}
 
 _≡₂_ : ℕ → ℕ → Set
 m ≡₂ n = mod₂ m ≡ mod₂ n
 
+≡₂?Lem : (n : ℕ) -> neg (mod₂ n ≡ mod₂ (suc n))
+≡₂?Lem zero modeq = lem zero modeq
+≡₂?Lem (suc n) modeq = ≡₂?Lem n (sym modeq)
+
 _≡₂?_ : (m n : ℕ) → Dec (m ≡₂ n)
-m ≡₂? n = {!   !}
- 
+m ≡₂? n with mod₂ m | mod₂ n
+... | zero | zero = yes refl
+... | zero | (suc y) = no (lem y)
+... | (suc x) | zero = no (λ ())
+... | (suc x) | (suc y) = (suc x) ≡? (suc y)
+      
