@@ -99,11 +99,10 @@ subst P {a} {.a} refl x = x
 {- Probar sym y trans usando subst -}
 
 sym' : {A : Set} → {a b : A} → a ≡ b → b ≡ a
-sym' {a = a} p = subst {!!} {!!} {!!}
+sym' {a = a} p = subst (λ x → x ≡ a) p refl
 
 trans' : {A : Set}{a b c : A} → a ≡ b → b ≡ c → a ≡ c
-trans' {a = a} ab bc = subst {!!} {!!} {!!}
-
+trans' {a = a} ab bc = subst (λ x → a ≡ x) bc ab
 --------------------------------------------------
 
 {- unicidad de pruebas de identidad (UIP) -}
@@ -173,7 +172,19 @@ suma-equiv' x (suc y) =
 intentar que la prueba sea legible usando ≡-Reasoning
 -}
 +-comm : (m n : ℕ) → m + n ≡ n + m
-+-comm m n = {!!}
++-comm zero zero = refl
++-comm zero (suc n) = cong suc (+-comm zero n)
++-comm (suc m) zero = +0 (suc m)
++-comm (suc m) (suc n) = 
+  begin
+   suc m + suc n
+  ≡⟨ +suc (suc m) n ⟩
+   suc (suc m + n)
+  ≡⟨ cong suc (+-comm (suc m) n) ⟩
+   suc (n + suc m)
+  ≡⟨ refl ⟩
+   suc n + suc m
+  ∎
 
 +-assoc : (m n l : ℕ) → m + (n + l) ≡ (m + n) + l
 +-assoc m n l = {!!}
@@ -401,3 +412,4 @@ m ≡₂ n = mod₂ m ≡ mod₂ n
 
 _≡₂?_ : (m n : ℕ) → Dec (m ≡₂ n)
 m ≡₂? n = {!   !}
+ 

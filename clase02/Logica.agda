@@ -407,4 +407,4 @@ app¬¬ nnpeq nnp nq = nnpeq (λ x → nnp λ z → nq (x z))
 -}
 
 ¬¬deMorgan¬∧ : {P Q : prop} → ¬ (P ∧ Q) → ¬¬ ((¬ P) ∨ (¬ Q))
-¬¬deMorgan¬∧ npyq nnponq = nnponq (left (λ x → nnponq (right (λ y → npyq (x , y)))))       
+¬¬deMorgan¬∧ npyq nnponq = nnponq (left (λ x → nnponq (right (λ y → npyq (x , y)))))
