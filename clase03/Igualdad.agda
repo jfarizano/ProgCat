@@ -479,9 +479,5 @@ m ≡₂ n = mod₂ m ≡ mod₂ n
 ≡₂?Lem (suc n) modeq = ≡₂?Lem n (sym modeq)
 
 _≡₂?_ : (m n : ℕ) → Dec (m ≡₂ n)
-m ≡₂? n with mod₂ m | mod₂ n
-... | zero | zero = yes refl
-... | zero | (suc y) = no (lem y)
-... | (suc x) | zero = no (λ ())
-... | (suc x) | (suc y) = (suc x) ≡? (suc y)
+m ≡₂? n = mod₂ m ≡? mod₂ n
       
