@@ -59,7 +59,7 @@ open NatMonoid
 {- Ejercicio: Probar que las listas son un monoide -}
 
 open ≡-Reasoning
-open import Data.List hiding (foldl ; foldr ; length)
+open import Data.List hiding (foldl ; foldr ; length ; fromMaybe)
 
 module ListMonoid where
 
@@ -187,16 +187,33 @@ mult-is-natmonoid-homo {c} = record {
 
 
 --------------------------------------------------
+{- Ejercicio : Definir foldr y probar que (foldr _∙_ ε) es un homorfismo de monoides -}
+
 module Foldr (M : Monoid) where
+  open Monoid M
 
- open Monoid M
 
- {- Ejercicio : Definir foldr y probar que (foldr _∙_ ε) es un homorfismo de monoides -}
+  foldr : {A B : Set} → (A → B → B) → B → List A → B
+  foldr _⊗_ e [] = e
+  foldr _⊗_ e (x ∷ xs) = x ⊗ (foldr _⊗_ e xs)
 
-{-
- foldr : {A B : Set} → (A → B → B) → B → List A → B
- foldr _⊗_ e xs = {!   !}
--}
+  foldrPreservesMult : {x y : List Carrier} → foldr _∙_ ε (x ++ y) ≡ foldr _∙_ ε x ∙ foldr _∙_ ε y
+  foldrPreservesMult {[]} {y} = sym lid
+  foldrPreservesMult {x ∷ xs} {y} = 
+    begin 
+      x ∙ foldr _∙_ ε (xs ++ y)
+    ≡⟨ cong (x ∙_) (foldrPreservesMult {xs} {y}) ⟩
+      x ∙ (foldr _∙_ ε xs ∙ foldr _∙_ ε y)
+    ≡⟨ sym assoc ⟩
+      (x ∙ foldr _∙_ ε xs) ∙ foldr _∙_ ε y
+    ∎
+
+  foldr-is-monoid-homo : Is-Monoid-Homo (ListMonoid Carrier) M (foldr _∙_ ε)
+  foldr-is-monoid-homo = record { 
+    preserves-unit = refl ; 
+    preserves-mult = λ {x} {y} → foldrPreservesMult {x} {y} }
+
+ 
 --------------------------------------------------
 
 {- Isomorfismos entre conjuntos -}
@@ -210,23 +227,116 @@ record Iso (A : Set)(B : Set) : Set where
 open Iso
 
 -----------------------------
-
 {- Ejercicio : introducir un tipo de datos (record) ⊤ con un único habitante y
 probar que  ℕ es isomorfo a List ⊤ -}
 
+module NatIsoListTop where
+  data ⊤ : Set where
+    t : ⊤ 
 
+  natToListTop : ℕ → (List ⊤)
+  natToListTop zero = []
+  natToListTop (suc n) = t ∷ (natToListTop n)
+
+  listTopToNat : (List ⊤) → ℕ
+  listTopToNat [] = zero
+  listTopToNat (t ∷ ts) = suc (listTopToNat ts)
+
+  law1TopNatTop : (ts : List ⊤) → natToListTop (listTopToNat ts) ≡ ts
+  law1TopNatTop [] = refl
+  law1TopNatTop (t ∷ ts) = cong (t ∷_) (law1TopNatTop ts)
+
+  law2NatTopNat : (n : ℕ) → listTopToNat (natToListTop n) ≡ n
+  law2NatTopNat zero = refl
+  law2NatTopNat (suc n) = cong suc (law2NatTopNat n)
+
+  nat-is-iso-listTop : Iso ℕ (List ⊤)
+  nat-is-iso-listTop = record 
+    { fun = natToListTop ; 
+      inv = listTopToNat ; -- topToListNat ≡ length
+      law1 = law1TopNatTop ; 
+      law2 = law2NatTopNat }
+
+
+-----------------------------
 {- Ejercicio: introducir un constructor de tipos Maybe (o usar Data.Maybe) y probar que
 Maybe ℕ es isomorfo a ℕ -}
 
+module MaybeNatIsoNat where
+  open import Data.Maybe
+
+  maybeToNat : (Maybe ℕ) → ℕ
+  maybeToNat nothing = 0
+  maybeToNat (just n) = suc n
+
+  natToMaybe : ℕ → (Maybe ℕ)
+  natToMaybe zero = nothing
+  natToMaybe (suc n) = just n
+
+  law1NatMaybeNat : (n : ℕ) → maybeToNat (natToMaybe n) ≡ n
+  law1NatMaybeNat zero = refl
+  law1NatMaybeNat (suc n) = refl
+
+  law2MaybeNatMaybe : (m : Maybe ℕ) → natToMaybe (maybeToNat m) ≡ m
+  law2MaybeNatMaybe (just x) = refl
+  law2MaybeNatMaybe nothing = refl
+
+  maybeNat-is-iso-Nat : Iso (Maybe ℕ) ℕ
+  maybeNat-is-iso-Nat = record { 
+    fun = maybeToNat ; 
+    inv = natToMaybe; 
+    law1 = law1NatMaybeNat; 
+    law2 = law2MaybeNatMaybe}
+
+-----------------------------
 {- Ejercicio: introducir un constructor de tipos _×_ para productos
 cartesianos (o usar el de Data.Product) y probar que (A → B × C) es
 isomorfo a (A → B) × (A → C) para todos A, B, y C, habitantes de Set -}
 
+module FunProductIso where
+  funProd : {A B C : Set} → (A → (B × C)) → ((A → B) × (A → C))
+  funProd f = (λ x → fst (f x)) , (λ x → snd (f x))
 
+  invProd : {A B C : Set} → ((A → B) × (A → C)) → (A → (B × C)) 
+  invProd (f , g) = λ x → (f x) , (g x) 
+   
+  AtoBxC-is-iso-AtoBxAtoC : {A B C : Set} → Iso (A → (B × C)) ((A → B) × (A → C))
+  AtoBxC-is-iso-AtoBxAtoC = record { 
+    fun = funProd ; 
+    inv = invProd ; 
+    law1 = λ b → refl ; 
+    law2 = λ a → refl }
+
+
+-----------------------------
 {- Ejercicio: construir isomorfismos entre Vec A n × Vec B n y
 Vec (A × B) n para todos A, B habitantes de Set y n natural -}
+module VecProdIso where
+  open import Data.Vec
 
-open import Data.Vec
+  funVecProd : {n : ℕ} → {A B : Set} → (Vec A n) × (Vec B n) → (Vec (A × B) n)
+  funVecProd ([] , []) = []
+  funVecProd (a ∷ va , b ∷ vb) = (a , b) ∷ funVecProd (va , vb)
+
+  invVecProd : {n : ℕ} → {A B : Set} → (Vec (A × B) n) → (Vec A n) × (Vec B n)
+  invVecProd [] = [] , []
+  invVecProd ((a , b) ∷ v) with invVecProd v
+  ... | va , vb = ((a ∷ va) , (b ∷ vb))
+
+  law1Dem : {n : ℕ} → {A B : Set} → (v : Vec (A × B) n) → funVecProd (invVecProd v) ≡ v
+  law1Dem [] = refl
+  law1Dem ((a , b) ∷ v) = cong (λ v → ((a , b)) ∷ v) (law1Dem v)
+
+  law2Dem : {n : ℕ} → {A B : Set} → (p : Vec A n × Vec B n) → invVecProd (funVecProd p) ≡ p
+  law2Dem ([] , []) = refl
+  law2Dem (a ∷ va , b ∷ vb) = cong (λ {(x , y) → (a ∷ x) , (b ∷ y)}) (law2Dem (va , vb))
+
+  VecAnxVecBn-is-iso-VecAxBn : {n : ℕ} → {A B : Set} → Iso ((Vec A n) × (Vec B n)) (Vec (A × B) n)
+  VecAnxVecBn-is-iso-VecAxBn = record { 
+    fun = funVecProd ; 
+    inv = invVecProd ; 
+    law1 = law1Dem ; 
+    law2 = law2Dem }
 
 
 --------------------------------------------------
@@ -236,6 +346,19 @@ open import Data.Vec
 Ayuda : puede ser útil usar cong-app
 -}
 
+
 Biyectiva : {X Y : Set}(f : X → Y) → Set
 Biyectiva {X} {Y} f = (y : Y) → Σ X (λ x → (f x ≡ y) × (∀ x' → f x' ≡ y → x ≡ x')) 
-  
+
+set-iso-biy : {X Y : Set} → (iso : Iso X Y) → Biyectiva {X} {Y} (fun iso)
+set-iso-biy record { fun = fun ; 
+                     inv = inv ; 
+                     law1 = law1 ; 
+                     law2 = law2 } 
+                     = λ y → (inv y) , (law1 y , λ x fxeqy → begin 
+                                                              inv y 
+                                                             ≡⟨ sym (cong inv fxeqy) ⟩ 
+                                                              inv (fun x) 
+                                                             ≡⟨ law2 x ⟩ 
+                                                              x 
+                                                             ∎)
