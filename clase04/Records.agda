@@ -350,8 +350,8 @@ Ayuda : puede ser útil usar cong-app
 Biyectiva : {X Y : Set}(f : X → Y) → Set
 Biyectiva {X} {Y} f = (y : Y) → Σ X (λ x → (f x ≡ y) × (∀ x' → f x' ≡ y → x ≡ x')) 
 
-set-iso-biy : {X Y : Set} → (iso : Iso X Y) → Biyectiva {X} {Y} (fun iso)
-set-iso-biy record { fun = fun ; 
+set-iso-biy₁ : {X Y : Set} → (iso : Iso X Y) → Biyectiva {X} {Y} (fun iso)
+set-iso-biy₁ record { fun = fun ; 
                      inv = inv ; 
                      law1 = law1 ; 
                      law2 = law2 } 
@@ -362,3 +362,9 @@ set-iso-biy record { fun = fun ;
                                                              ≡⟨ law2 x ⟩ 
                                                               x 
                                                              ∎)
+
+set-iso-biy₂ : {X Y : Set} → (f : X → Y) → (g : Biyectiva {X} {Y} f) → Iso X Y
+set-iso-biy₂ f g = record { fun = f ; 
+                            inv = λ x → fst (g x) ; 
+                            law1 = λ b → fst (snd (g b)) ; 
+                            law2 = λ a → snd (snd (g (f a))) a refl }
