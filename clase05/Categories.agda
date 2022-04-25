@@ -231,7 +231,16 @@ module CatMon where
  open import Records-completo hiding (Iso ; ⊤)
 
  CatMon : Monoid → Cat
- CatMon M = {!!} 
+ CatMon M = record
+  { Obj = Lift _ ⊤
+  ; Hom = λ _ _ → Carrier
+  ; iden = ε
+  ; _∙_ = _∙_
+  ; idl = lid
+  ; idr = rid
+  ; ass = assoc
+  }
+  where open Monoid M
 
 
 --------------------------------------------------
@@ -243,11 +252,17 @@ module MonCat where
 
  open import Records-completo hiding (Iso)
 
- open Is-Monoid-Homo
-
-
  MonCat : Cat
- MonCat = {!!}
+ MonCat = record
+  { Obj = Monoid
+  ; Hom = λ M N → (Carrier M → Carrier N)
+  ; iden = id
+  ; _∙_ = λ g f x → g (f x)
+  ; idl = refl
+  ; idr = refl
+  ; ass = refl
+  }
+  where open Monoid
  
 --------------------------------------------------
 {- Ejercicio: Dada un categoría C, definir la siguiente categoría:
@@ -261,9 +276,29 @@ module ArrowCat (C : Cat) where
 
  open Cat C 
 
+ record Arrow₀ : Set₁ where
+  field
+    from : Obj
+    to : Obj
+    baseHom : Hom from to
+
+ open Arrow₀
+
+ record Arrow₁ (X Y : Arrow₀) : Set where
+  field
+    homBase : (Hom (from X) (from Y)) × (Hom (to X) (to Y))
+    prop : (baseHom Y) ∙ (fst homBase) ≡ (snd homBase) ∙ (baseHom X)
 
  ArrowCat : Cat
- ArrowCat = {!!}
+ ArrowCat = record
+  { Obj = Arrow₀
+  ; Hom = Arrow₁
+  ; iden = record { homBase = iden , iden ; prop = {!   !} }
+  ; _∙_ = {!   !}
+  ; idl = {!   !}
+  ; idr = {!   !}
+  ; ass = {!   !}
+  }
  
 --------------------------------------------------
 {- Generalizamos la noción de isomorfismo de la clase pasada a cualquier categoría -}
@@ -314,3 +349,4 @@ Ayuda : puede ser útil usar cong-app
 --------------------------------------------------
 
 
+ 
