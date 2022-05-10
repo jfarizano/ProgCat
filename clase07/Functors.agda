@@ -153,25 +153,48 @@ TreeF-id : {X : Set × Set} →
 TreeF-id (leaf x) = refl
 TreeF-id (node lt x rt) =
   proof 
-    node (mapTree (iden Sets) (iden Sets) lt) (iden Sets x) (mapTree (iden Sets) (iden Sets) rt)
-  ≅⟨ cong₂ (λ a b → node a x b) (TreeF-id lt) (TreeF-id rt) ⟩
+    node (mapTree (iden Sets) (iden Sets) lt) 
+         (iden Sets x) 
+         (mapTree (iden Sets) (iden Sets) rt)
+  ≅⟨ cong₂ (λ l r → node l x r) (TreeF-id lt) (TreeF-id rt) ⟩
     node lt x rt
   ∎
 
-
+TreeF-comp : {X Y Z : Set × Set}
+             {f : (fst Y → fst Z) × (snd Y → snd Z)}
+             {g : (fst X → fst Y) × (snd X → snd Y)} →
+             (x : Tree (fst X) (snd X)) →
+             mapTree (λ x → fst f (fst g x)) (λ x → snd f (snd g x)) x ≅
+             mapTree (fst f) (snd f) (mapTree (fst g) (snd g) x)
+TreeF-comp (leaf x) = refl
+TreeF-comp {f = f} {g = g} (node lt x rt) =
+  proof
+    node (mapTree (λ x → fst f (fst g x)) (λ x → snd f (snd g x)) lt)
+         (snd f (snd g x))
+         (mapTree (λ x → fst f (fst g x)) (λ x → snd f (snd g x)) rt)
+  ≅⟨ cong₂ (λ l r → node l (snd f (snd g x)) r) (TreeF-comp lt) (TreeF-comp rt) ⟩
+    node (mapTree (fst f) (snd f) (mapTree (fst g) (snd g) lt))
+         (snd f (snd g x))
+         (mapTree (fst f) (snd f) (mapTree (fst g) (snd g) rt))
+  ∎
 
 TreeF : Fun (Sets ×C Sets) Sets
-TreeF = functor (λ { (A , B) → Tree A B}) 
-                (λ { (f , g) → mapTree f g}) 
-                (ext TreeF-id) 
-                (ext {!   !})
+TreeF = functor (λ { (A , B) → Tree A B})
+                (λ { (f , g) → mapTree f g})
+                (ext TreeF-id)
+                (ext TreeF-comp)
 
 --------------------------------------------------
 {- Ejercicio: Hom functor : probar que el Hom de una categoría C
   es un bifunctor Hom : (C Op) ×C C → Sets
   -}
+
 HomF : ∀{a}{b}{C : Cat {a} {b}} → Fun ((C Op) ×C C) (Categories.Sets.Sets {b})
-HomF {C = C} = {!   !}
+HomF {C = C} = 
+  functor (λ { (X , Y) → Hom C X Y})
+          (λ { (f , g) x → {!   !}}) 
+          {!   !} 
+          {!   !}
 
 --------------------------------------------------
 {- Composición de funtores -}
@@ -259,3 +282,4 @@ FunIso  = {! !}
 -}
 
 
+   
