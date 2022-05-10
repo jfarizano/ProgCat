@@ -102,26 +102,33 @@ module ProductMorphisms (p : Products)
 
   {- Toda categoría con productos posee los siguientes morfismos -}
   unit : ∀{A} → Hom (A × Uno) A
-  unit = {!!}
+  unit = π₁
 
   swap : ∀{A B} → Hom (A × B)  (B × A)
-  swap = {!!}
+  swap = ⟨ π₂ , π₁ ⟩
 
   assoc : ∀{A B C} → Hom ((A × B) × C) (A × (B × C))
-  assoc = {!!}
+  assoc {A} {B} {C} = ⟨ (π₁ ∙ π₁) , ⟨ π₂ ∙ π₁ , π₂ ⟩ ⟩
 
   -- Ejercicio extra Probar que unit, swap, y assoc son isomorfismos.
 
   {- Definir el morfismo pair -}
   pair : ∀{A B C D}(f : Hom A B)(g : Hom C D)
        → Hom (A × C) (B × D)
-  pair f g = {!!}
+  pair f g = ⟨ (f ∙ π₁) , (g ∙ π₂) ⟩
 
   -- Probar las siguientes propiedades de pair
 
   idpair : ∀{X Y} → pair (iden {X}) (iden {Y}) ≅ iden {X × Y}
-  idpair {X} {Y} = {!!}
-
+  idpair {X} {Y} = proof 
+                    pair iden iden
+                   ≅⟨ refl  ⟩
+                    ⟨ (iden ∙ π₁) , (iden ∙ π₂) ⟩
+                   ≅⟨ {!  !} ⟩
+                    {!   !}
+                   ≅⟨ {!   !} ⟩
+                    iden {X × Y}
+                   ∎
   compdistrib : ∀{A B C D E F}
               → (f : Hom B C)(g : Hom A B)
               → (h : Hom E F)(i : Hom D E)

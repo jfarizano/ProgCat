@@ -267,7 +267,8 @@ module MonCat where
 --------------------------------------------------
 {- Ejercicio: Dada un categoría C, definir la siguiente categoría:
   - Los objetos son morfismos de C
-  - Un morfismo entre una flecha f: A → B y f': A'→ B' es un par de morfismos de C
+  - Un morfismo entre una flecha f: A → B y f': A'→ B' es un par de morfismos
+    de C
       g1 : A → A', y g2 : B → B', tal que
                     f' ∙ g₁ ≡ g₂ ∙ f
 -}
@@ -289,15 +290,79 @@ module ArrowCat (C : Cat) where
     homBase : (Hom (from X) (from Y)) × (Hom (to X) (to Y))
     prop : (baseHom Y) ∙ (fst homBase) ≡ (snd homBase) ∙ (baseHom X)
 
+ open Arrow₁
+
+ idenArrow₁ : {X : Arrow₀} → Arrow₁ X X
+ idenArrow₁ {X} = record 
+     { homBase = iden , iden ; 
+       prop = proof 
+               baseHom X ∙ iden
+              ≡⟨ idr ⟩
+               baseHom X
+              ≡⟨ sym idl ⟩
+               iden ∙ baseHom X
+              ∎ } 
+                            
+ compArrow₁ : {X Y Z : Arrow₀} → Arrow₁ Y Z → Arrow₁ X Y → Arrow₁ X Z
+ compArrow₁ {X} {Y} {Z} G F = record 
+    { homBase = (fst (homBase G) ∙ fst (homBase F)) , 
+                (snd (homBase G) ∙ snd (homBase F)) ; 
+      prop = proof 
+              baseHom Z ∙ (fst (homBase G) ∙ fst (homBase F))
+             ≡⟨ sym ass ⟩
+              (baseHom Z ∙ fst (homBase G)) ∙ fst (homBase F)
+             ≡⟨ cong (λ x → x ∙ fst (homBase F)) (prop G) ⟩
+              (snd (homBase G) ∙ baseHom Y) ∙ fst (homBase F)
+             ≡⟨ ass ⟩
+              snd (homBase G) ∙ (baseHom Y ∙ fst (homBase F))
+             ≡⟨ cong (λ x → snd (homBase G) ∙ x) (prop F) ⟩
+              snd (homBase G) ∙ (snd (homBase F) ∙ baseHom X)
+             ≡⟨ sym ass ⟩
+              (snd (homBase G) ∙ snd (homBase F)) ∙ baseHom X
+             ∎ }
+
+ arrow₁-eq : {X Y : Arrow₀} → {f g : Arrow₁ X Y} → (homBase f ≡ homBase g) → (f ≡ g)
+ arrow₁-eq {f = record { homBase = homBase ; prop = prop₁ }}
+           {g = record { homBase = .(homBase) ; prop = prop }}
+           refl = cong (λ p → (record { homBase = homBase ; prop = p })) (ir prop₁ prop)
+
  ArrowCat : Cat
  ArrowCat = record
   { Obj = Arrow₀
   ; Hom = Arrow₁
-  ; iden = record { homBase = iden , iden ; prop = {!   !} }
-  ; _∙_ = {!   !}
-  ; idl = {!   !}
-  ; idr = {!   !}
-  ; ass = {!   !}
+  ; iden = idenArrow₁
+  ; _∙_ = compArrow₁
+  ; idl = λ {X Y f} → arrow₁-eq (proof 
+                                  homBase (compArrow₁ idenArrow₁ f)
+                                 ≡⟨ refl ⟩
+                                  (fst (homBase idenArrow₁) ∙ fst (homBase f)) , (snd (homBase idenArrow₁) ∙ snd (homBase f))
+                                 ≡⟨ refl ⟩
+                                  iden ∙ fst (homBase f) , iden ∙ snd (homBase f)
+                                 ≡⟨ cong₂ _,_ idl idl ⟩
+                                  fst (homBase f) , snd (homBase f)
+                                 ≡⟨ refl ⟩
+                                  homBase f
+                                 ∎)
+  ; idr = λ {X Y f} → arrow₁-eq (proof 
+                                  homBase (compArrow₁ f idenArrow₁)
+                                 ≡⟨ refl ⟩
+                                  (fst (homBase f) ∙ fst (homBase idenArrow₁)) , (snd (homBase f)) ∙ (snd (homBase idenArrow₁))
+                                 ≡⟨ refl ⟩
+                                  (fst (homBase f) ∙ iden) , (snd (homBase f)) ∙ iden
+                                 ≡⟨ cong₂ _,_ idr idr ⟩
+                                  fst (homBase f) , snd (homBase f)
+                                 ≡⟨ refl ⟩
+                                  homBase f
+                                 ∎)
+  ; ass = λ {X Y Z W f g h} →  arrow₁-eq (proof 
+                                           homBase (compArrow₁ (compArrow₁ f g) h)
+                                          ≡⟨ refl ⟩
+                                           ((fst (homBase f) ∙ fst (homBase g)) ∙ fst (homBase h)) , ((snd (homBase f) ∙ snd (homBase g)) ∙ snd (homBase h))
+                                          ≡⟨ cong₂ _,_ ass ass ⟩
+                                           (fst (homBase f) ∙ (fst (homBase g) ∙ fst (homBase h))) , (snd (homBase f) ∙ (snd (homBase g) ∙ snd (homBase h)))
+                                          ≡⟨ refl ⟩
+                                           homBase (compArrow₁ f (compArrow₁ g h))
+                                          ∎)
   }
  
 --------------------------------------------------
@@ -321,13 +386,15 @@ record Iso {C : Cat}(A B : Obj C)(fun : Hom C A B) : Set where
 Ayuda : puede ser útil usar cong-app
 -}
 
+-- → Hecho en clase04 
 
 --------------------------------------------------
 {- Ejercicio:
  Probar que un isormofismo en (C : Cat) es un isomorfismo en (C Op).
-
-
 -}
+
+isoC-isoCOp : {C : Cat}{A B : Obj C}{f : Hom C A B} → (iso : Iso {C} A B f) → Iso {C Op} B A f
+isoC-isoCOp (iso inv law1 law2) = iso inv law2 law1
 
 --------------------------------------------------
 {- Ejercicio EXTRA:
@@ -349,4 +416,4 @@ Ayuda : puede ser útil usar cong-app
 --------------------------------------------------
 
 
- 
+   

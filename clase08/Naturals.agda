@@ -135,7 +135,7 @@ module Ejemplos where
  --
  revNat : NatT ListF ListF
  revNat = natural (λ- reverse) 
-                (ext (λ xs → reverse-naturality xs []))
+                  (ext (λ xs → reverse-naturality xs []))
 
 {- Definimos las transformaciones naturales en NatT con la componente explícita.
   Las funciones de librería como reverse están definidas con su componente
@@ -143,13 +143,36 @@ module Ejemplos where
 -}
 
 -- Ejercicio: probar que concat es una transformación natural
+ lemDistMapList :: {X Y : Set} {f : X → Y} →
+                   
+ 
+ concatNat-naturality : {X Y : Set} {f : X → Y} →
+                        (xss : List (List X)) →
+                        mapList f (concat xss) ≅
+                        concat (mapList (mapList f) xss)
+ concatNat-naturality [] = refl
+ concatNat-naturality {f = f} (xs ∷ xss) = 
+  proof 
+    mapList f (concat (xs ∷ xss))
+  ≅⟨ refl ⟩
+    mapList f (foldr _++_ [] (xs ∷ xss))
+  ≅⟨ refl ⟩
+    mapList f (xs ++ (foldr _++_ [] xss))
+  ≅⟨ {! lemDistMapList f (xs ++ )  !} ⟩
+    mapList f xs ++ mapList f (concat xss)
+  ≅⟨ cong (mapList f xs ++_) (concatNat-naturality xss) ⟩
+    mapList f xs ++ concat (mapList (mapList f) xss)
+  ≅⟨ refl ⟩
+    concat (mapList (mapList f) (xs ∷ xss))
+  ∎
  concatNat : NatT (ListF ○ ListF) ListF
- concatNat = {!   !} 
+ concatNat = natural (λ X xss → concat {A = X} xss) 
+                     {!   !} 
 
  --
 -- Ejercicio: probar que length es una transformación natural
 -- ¿Entre qué funtores es una transformación natural?
- lengthNat : NatT {!   !} {!   !}
+ lengthNat : NatT ListF {!  !}
  lengthNat = {!   !}
 
 -- Ejercicio: probar que safehead es una transformación natural
@@ -158,7 +181,7 @@ module Ejemplos where
  safeHead (x ∷ xs) = just x
 
  headNat : NatT ListF MaybeF
- headNat = {!   !}
+ headNat = natural (λ- safeHead) {!   !}
  
  --
 --------------------------------------------------
@@ -307,4 +330,4 @@ module FunctorCoproduct (cop : Coproducts C) where
 
  copairF : ∀{F G H K} →
           (NatT {C = D} F H) → (NatT G K) → NatT (F +F G) (H +F K)
- copairF = {!   !} 
+ copairF = {!   !}  
