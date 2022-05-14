@@ -132,7 +132,7 @@ module Ejemplos where
           foldl (λ ys y → y ∷ ys) (mapList f ys) (mapList f xs)
  reverse-naturality [] ys = refl
  reverse-naturality (x ∷ xs) ys = reverse-naturality xs (x ∷ ys)
- --
+ 
  revNat : NatT ListF ListF
  revNat = natural (λ- reverse) 
                   (ext (λ xs → reverse-naturality xs []))
@@ -143,9 +143,12 @@ module Ejemplos where
 -}
 
 -- Ejercicio: probar que concat es una transformación natural
- lemDistMapList :: {X Y : Set} {f : X → Y} →
+ lemDistMapList : {X Y : Set} {f : X → Y} → (xs : List X) → (xss : List (List X)) → 
+                  mapList f (xs ++ foldr _++_ [] xss) ≅
+                  mapList f xs ++ mapList f (concat xss)
+ lemDistMapList [] xss = refl
+ lemDistMapList {f = f} (x ∷ xs) xss = cong (f x ∷_) (lemDistMapList xs xss)
                    
- 
  concatNat-naturality : {X Y : Set} {f : X → Y} →
                         (xss : List (List X)) →
                         mapList f (concat xss) ≅
@@ -158,30 +161,44 @@ module Ejemplos where
     mapList f (foldr _++_ [] (xs ∷ xss))
   ≅⟨ refl ⟩
     mapList f (xs ++ (foldr _++_ [] xss))
-  ≅⟨ {! lemDistMapList f (xs ++ )  !} ⟩
+  ≅⟨ lemDistMapList xs xss ⟩
     mapList f xs ++ mapList f (concat xss)
   ≅⟨ cong (mapList f xs ++_) (concatNat-naturality xss) ⟩
     mapList f xs ++ concat (mapList (mapList f) xss)
   ≅⟨ refl ⟩
     concat (mapList (mapList f) (xs ∷ xss))
   ∎
+
  concatNat : NatT (ListF ○ ListF) ListF
  concatNat = natural (λ X xss → concat {A = X} xss) 
-                     {!   !} 
+                     (ext concatNat-naturality) 
 
  --
 -- Ejercicio: probar que length es una transformación natural
 -- ¿Entre qué funtores es una transformación natural?
- lengthNat : NatT ListF {!  !}
- lengthNat = {!   !}
+ length-Naturality : ∀{X Y : Set}{f : X → Y} → (xs : List X) →
+                     foldr (λ _ → suc) 0 xs ≅ 
+                     foldr (λ _ → suc) 0 (mapList f xs)
+ length-Naturality [] = refl
+ length-Naturality (x ∷ xs) = cong suc (length-Naturality xs)
+
+ lengthNat : NatT ListF (K ℕ)
+ lengthNat = natural (λ- length) 
+                     (ext length-Naturality)
 
 -- Ejercicio: probar que safehead es una transformación natural
  safeHead : {A : Set} → List A → Maybe A
  safeHead [] = nothing
  safeHead (x ∷ xs) = just x
 
+ headNat-Naturality : {X Y : Set} {f : X → Y} →
+                      (xs : OMap ListF X) →
+                      (HMap MaybeF f ∙ safeHead) xs ≅ (safeHead ∙ HMap ListF f) xs
+ headNat-Naturality [] = refl
+ headNat-Naturality (x ∷ xs) = refl
+
  headNat : NatT ListF MaybeF
- headNat = natural (λ- safeHead) {!   !}
+ headNat = natural (λ- safeHead) (ext headNat-Naturality)
  
  --
 --------------------------------------------------
@@ -263,7 +280,7 @@ compHNat : ∀{F G : Fun C D}{J K : Fun D E}
 compHNat {D = D}{E = E}{F = F}{G} {J}{K} η ε = 
    let open Cat E
        open Cat D using () renaming (_∙_ to _∙D_)
-   in natural {!   !}
+   in natural (λ X → {!   !})
               λ {X Y f} → 
               proof 
               {!   !}  ≅⟨  {!   !} ⟩

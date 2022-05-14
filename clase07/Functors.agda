@@ -192,9 +192,34 @@ TreeF = functor (λ { (A , B) → Tree A B})
 HomF : ∀{a}{b}{C : Cat {a} {b}} → Fun ((C Op) ×C C) (Categories.Sets.Sets {b})
 HomF {C = C} = 
   functor (λ { (X , Y) → Hom C X Y})
-          (λ { (f , g) x → {!   !}}) 
-          {!   !} 
-          {!   !}
+          (λ { (f , g) h → (g ∙c h) ∙c f})
+          (ext HomF-id) 
+          (ext HomF-comp)
+          where 
+          open Cat C using () renaming ( _∙_ to _∙c_ )
+          HomF-id : {X : Obj C × Obj C} → (f : Hom C (fst X) (snd X)) → (iden C ∙c f) ∙c iden C ≅ f
+          HomF-id f = proof 
+                        ((iden C ∙c f) ∙c iden C)
+                      ≅⟨ idr C ⟩
+                        (iden C ∙c f)
+                      ≅⟨ idl C ⟩
+                        f
+                      ∎
+          HomF-comp : {X Y Z : Obj C × Obj C} → 
+                      {f : Hom C (fst Z) (fst Y) × Hom C (snd Y) (snd Z)} →
+                      {g : Hom C (fst Y) (fst X) × Hom C (snd X) (snd Y)} →
+                      (h : Hom C (fst X) (snd X)) →
+                      ((snd f ∙c snd g) ∙c h) ∙c fst g ∙c fst f ≅
+                      (snd f ∙c ((snd g ∙c h) ∙c fst g)) ∙c fst f
+          HomF-comp {f = f} {g} h = proof 
+                                      (((snd f ∙c snd g) ∙c h) ∙c (fst g ∙c fst f))
+                                    ≅⟨ cong (_∙c (fst g ∙c fst f)) (ass C) ⟩
+                                      ((snd f ∙c (snd g ∙c h)) ∙c (fst g ∙c fst f))
+                                    ≅⟨ sym (ass C) ⟩
+                                      (((snd f ∙c (snd g ∙c h)) ∙c fst g) ∙c fst f)
+                                    ≅⟨ cong (_∙c fst f) (ass C) ⟩
+                                      ((snd f ∙c ((snd g ∙c h) ∙c fst g)) ∙c fst f)
+                                    ∎
 
 --------------------------------------------------
 {- Composición de funtores -}
@@ -204,16 +229,23 @@ _○_ {D = D}{E = E}{C = C} F G =
        open Cat D using () renaming (_∙_ to _∙d_)
        open Cat E using () renaming (_∙_ to _∙e_)
    in functor 
-    (OMap F ∘ OMap G) 
-     (HMap F ∘ HMap G) 
-     (proof         
-       HMap F (HMap G (iden C))       
-      ≅⟨ cong (HMap F) (fid G) ⟩
-       HMap F (iden D) 
-      ≅⟨ fid F ⟩
-       iden E
-     ∎) 
-     {!   !}
+      (OMap F ∘ OMap G) 
+      (HMap F ∘ HMap G) 
+      (proof         
+        HMap F (HMap G (iden C))       
+       ≅⟨ cong (HMap F) (fid G) ⟩
+        HMap F (iden D) 
+       ≅⟨ fid F ⟩
+        iden E
+      ∎) 
+      (λ {X Y Z f g} →
+        proof 
+        HMap F (HMap G (f ∙c g))
+       ≅⟨ cong (HMap F) (fcomp G) ⟩
+        HMap F (HMap G f ∙d HMap G g)
+       ≅⟨ fcomp F ⟩
+        (HMap F (HMap G f) ∙e HMap F (HMap G g))
+       ∎)
     
 infixr 10 _○_
 
@@ -266,7 +298,28 @@ open import Categories.Iso
 
 FunIso : (F : Fun C D) → ∀{X Y}(f : Hom C X Y)
        → Iso C f → Iso D (HMap F f)
-FunIso  = {! !}
+FunIso {C = C} {D = D} F f (iso inv rinv linv) 
+       = let open Cat C using () renaming (_∙_ to _∙c_)
+             open Cat D using () renaming (_∙_ to _∙d_)
+         in iso (HMap F inv) 
+                (proof 
+                  (HMap F f ∙d HMap F inv)
+                 ≅⟨ sym (fcomp F) ⟩
+                  HMap F (f ∙c inv)
+                 ≅⟨ cong (HMap F) rinv ⟩
+                  HMap F (iden C)
+                 ≅⟨ fid F ⟩
+                  iden D
+                 ∎)
+                (proof 
+                  (HMap F inv ∙d HMap F f)
+                 ≅⟨ sym (fcomp F) ⟩
+                  HMap F (inv ∙c f)
+                 ≅⟨ cong (HMap F) linv ⟩
+                   HMap F (iden C)
+                 ≅⟨ fid F ⟩
+                  iden D
+                 ∎)
 
 --------------------------------------------------
 {- Ejercicio EXTRA: Sea C una categoría con productos. Probar
@@ -282,4 +335,4 @@ FunIso  = {! !}
 -}
 
 
-   
+    

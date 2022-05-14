@@ -108,33 +108,67 @@ module ProductMorphisms (p : Products)
   swap = ⟨ π₂ , π₁ ⟩
 
   assoc : ∀{A B C} → Hom ((A × B) × C) (A × (B × C))
-  assoc {A} {B} {C} = ⟨ (π₁ ∙ π₁) , ⟨ π₂ ∙ π₁ , π₂ ⟩ ⟩
+  assoc {A} {B} {C} = ⟨ π₁ ∙ π₁ , ⟨ π₂ ∙ π₁ , π₂ ⟩ ⟩
 
   -- Ejercicio extra Probar que unit, swap, y assoc son isomorfismos.
 
   {- Definir el morfismo pair -}
   pair : ∀{A B C D}(f : Hom A B)(g : Hom C D)
        → Hom (A × C) (B × D)
-  pair f g = ⟨ (f ∙ π₁) , (g ∙ π₂) ⟩
+  pair f g = ⟨ f ∙ π₁ , g ∙ π₂ ⟩
 
   -- Probar las siguientes propiedades de pair
 
   idpair : ∀{X Y} → pair (iden {X}) (iden {Y}) ≅ iden {X × Y}
-  idpair {X} {Y} = proof 
-                    pair iden iden
-                   ≅⟨ refl  ⟩
-                    ⟨ (iden ∙ π₁) , (iden ∙ π₂) ⟩
-                   ≅⟨ {!  !} ⟩
-                    {!   !}
-                   ≅⟨ {!   !} ⟩
-                    iden {X × Y}
-                   ∎
+  idpair = proof 
+            pair iden iden
+           ≅⟨ refl  ⟩
+            ⟨ iden ∙ π₁ , iden ∙ π₂ ⟩
+           ≅⟨ cong₂ ⟨_,_⟩ idl idl ⟩
+            ⟨ π₁ , π₂ ⟩
+           ≅⟨ sym (law3 idr idr) ⟩
+            iden
+           ∎
+
   compdistrib : ∀{A B C D E F}
               → (f : Hom B C)(g : Hom A B)
               → (h : Hom E F)(i : Hom D E)
               → pair (f ∙ g) (h ∙ i) ≅ pair f h ∙ pair g i
-  compdistrib f g h i = {!!}
-
+  compdistrib f g h i = sym (law3 (proof 
+                                    π₁ ∙ (pair f h ∙ pair g i)
+                                   ≅⟨ sym ass ⟩
+                                    (π₁ ∙ pair f h) ∙ pair g i
+                                   ≅⟨ refl ⟩
+                                    (π₁ ∙ ⟨ f ∙ π₁ , h ∙ π₂ ⟩) ∙ pair g i
+                                   ≅⟨ congl law1 ⟩
+                                    (f ∙ π₁) ∙ pair g i
+                                   ≅⟨ ass ⟩
+                                    f ∙ (π₁ ∙ pair g i)
+                                   ≅⟨ refl ⟩
+                                    f ∙ (π₁ ∙ ⟨ g ∙ π₁ , i ∙ π₂ ⟩)
+                                   ≅⟨ congr law1 ⟩
+                                    f ∙ (g ∙ π₁)
+                                   ≅⟨ sym ass ⟩
+                                    (f ∙ g) ∙ π₁
+                                   ∎) 
+                                  (proof 
+                                    π₂ ∙ (pair f h ∙ pair g i)
+                                   ≅⟨ sym ass ⟩
+                                    (π₂ ∙ pair f h) ∙ pair g i
+                                   ≅⟨ refl ⟩
+                                    (π₂ ∙ ⟨ f ∙ π₁ , h ∙ π₂ ⟩) ∙ pair g i
+                                   ≅⟨ congl law2 ⟩
+                                    (h ∙ π₂) ∙ pair g i
+                                   ≅⟨ ass ⟩
+                                    h ∙ (π₂ ∙ pair g i)
+                                   ≅⟨ refl ⟩
+                                    h ∙ (π₂ ∙ ⟨ g ∙ π₁ , i ∙ π₂ ⟩)
+                                   ≅⟨ congr law2 ⟩
+                                    h ∙ (i ∙ π₂)
+                                   ≅⟨ sym ass ⟩
+                                    (h ∙ i) ∙ π₂
+                                   ∎) )
+  
 ----------------------
 -- Inicial
 ----------------------
@@ -171,7 +205,7 @@ record Coproducts : Set (a ⊔ b) where
 
  {- Ejercicio: Definir copair        -}
   copair : ∀{X Y Z W}(f : Hom X Z)(g : Hom Y W) → Hom (X + Y) (Z + W)
-  copair f g = {!   !}
+  copair f g = [ inl ∙ f , inr ∙ g ]
  
 
 
@@ -181,18 +215,60 @@ module CoproductMorphisms {cp : Coproducts} where
 
   {- Definir el siguiente morfismo -}
   plus : ∀{A B C D}(f : Hom A B)(g : Hom C D) → Hom (A + C) (B + D)
-  plus f g = {!   !}
+  plus = copair
 
   {- Probar las siguentes propiedades -}
 
   idplus : ∀{A B} → plus (iden {A}) (iden {B}) ≅ iden {A + B}
-  idplus = {!   !}
+  idplus = proof 
+            plus iden iden
+           ≅⟨ refl ⟩
+            [ inl ∙ iden , inr ∙ iden ]
+           ≅⟨ cong₂ [_,_] idr idr ⟩
+            [ inl , inr ]
+           ≅⟨ sym (law3 idl idl) ⟩
+            iden
+           ∎
 
   idcomp :  ∀{A B C D E F}
          → (f : Hom B C)(g : Hom A B)
          → (h : Hom E F)(i : Hom D E)
          → plus (f ∙ g) (h ∙ i) ≅ plus f h ∙ plus g i
-  idcomp  f g h i = {!   !}  
+  idcomp  f g h i = sym (law3 (proof 
+                                (plus f h ∙ plus g i) ∙ inl
+                               ≅⟨ ass ⟩
+                                plus f h ∙ (plus g i ∙ inl)
+                               ≅⟨ refl ⟩
+                                plus f h ∙ ([ inl ∙ g , inr ∙ i ] ∙ inl)
+                               ≅⟨ congr law1 ⟩
+                                plus f h ∙ (inl ∙ g)
+                               ≅⟨ sym ass ⟩
+                                (plus f h ∙ inl) ∙ g
+                               ≅⟨ refl ⟩
+                                ([ inl ∙ f , inr ∙ h ] ∙ inl) ∙ g
+                               ≅⟨ congl law1 ⟩
+                                (inl ∙ f) ∙ g
+                               ≅⟨ ass ⟩
+                                inl ∙ (f ∙ g)
+                               ∎)
+                                
+                              (proof 
+                                (plus f h ∙ plus g i) ∙ inr
+                               ≅⟨ ass ⟩
+                                plus f h ∙ (plus g i ∙ inr)
+                               ≅⟨ refl ⟩
+                                plus f h ∙ ([ inl ∙ g , inr ∙ i ] ∙ inr)
+                               ≅⟨ congr law2 ⟩
+                                plus f h ∙ (inr ∙ i)
+                               ≅⟨ sym ass ⟩
+                                (plus f h ∙ inr) ∙ i
+                               ≅⟨ refl ⟩
+                                ([ inl ∙ f , inr ∙ h ] ∙ inr) ∙ i
+                               ≅⟨ congl law2 ⟩
+                                (inr ∙ h) ∙ i
+                               ≅⟨ ass ⟩
+                                inr ∙ h ∙ i
+                               ∎))  
 
 module Intercambio {cp : Coproducts}{p : Products} where
 
@@ -205,4 +281,43 @@ module Intercambio {cp : Coproducts}{p : Products} where
          → (f : Hom A C)(g : Hom B C)
          → (h : Hom A D)(k : Hom B D)
          → ⟨ [ f , g ] , [ h , k ] ⟩ ≅ [ ⟨ f , h ⟩ , ⟨ g , k ⟩ ]
-  intercambio f g h k = {! ⟨ [ f , g ] , [ h , k ] ⟩  !}
+  intercambio f g h k = law3 (lawp3 (proof 
+                                      π₁ ∙ (⟨ [ f , g ] , [ h , k ] ⟩ ∙ inl)
+                                     ≅⟨ sym ass ⟩
+                                      (π₁ ∙ ⟨ [ f , g ] , [ h , k ] ⟩) ∙ inl
+                                     ≅⟨ congl lawp1 ⟩
+                                      [ f , g ] ∙ inl
+                                     ≅⟨ law1 ⟩
+                                      f
+                                     ∎)
+                                     
+                                    (proof 
+                                      π₂ ∙ (⟨ [ f , g ] , [ h , k ] ⟩ ∙ inl)
+                                     ≅⟨ sym ass ⟩
+                                      (π₂ ∙ ⟨ [ f , g ] , [ h , k ] ⟩) ∙ inl
+                                     ≅⟨ congl lawp2 ⟩
+                                      [ h , k ] ∙ inl
+                                     ≅⟨ law1 ⟩
+                                      h
+                                     ∎))
+                                     
+                             (lawp3 (proof 
+                                      π₁ ∙ (⟨ [ f , g ] , [ h , k ] ⟩ ∙ inr)
+                                     ≅⟨ sym ass ⟩
+                                      (π₁ ∙ ⟨ [ f , g ] , [ h , k ] ⟩) ∙ inr
+                                     ≅⟨ congl lawp1 ⟩
+                                      [ f , g ] ∙ inr
+                                     ≅⟨ law2 ⟩
+                                      g
+                                     ∎)
+                                     
+                                    (proof 
+                                      π₂ ∙ (⟨ [ f , g ] , [ h , k ] ⟩ ∙ inr)
+                                     ≅⟨ sym ass ⟩
+                                      (π₂ ∙ ⟨ [ f , g ] , [ h , k ] ⟩) ∙ inr
+                                     ≅⟨ congl lawp2 ⟩
+                                      [ h , k ] ∙ inr
+                                     ≅⟨ law2 ⟩
+                                      k
+                                     ∎) )
+ 
