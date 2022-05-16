@@ -23,7 +23,7 @@ open Fun F
 --------------------------------------------------
 {- Un homomorfismo de álgebras <A,α> → <B,β> consiste en:
     un morfismo h entre los portadores de las algebras A → B
-    una prueba de que se preserva la estructura:
+    y una prueba de que se preserva la estructura:
 
         FA ----HMap F h ----> FB
         |                      |

@@ -280,7 +280,7 @@ compHNat : ∀{F G : Fun C D}{J K : Fun D E}
 compHNat {D = D}{E = E}{F = F}{G} {J}{K} η ε = 
    let open Cat E
        open Cat D using () renaming (_∙_ to _∙D_)
-   in natural (λ X → {!   !})
+   in natural (λ X → {!   !} ∙ {!   !})
               λ {X Y f} → 
               proof 
               {!   !}  ≅⟨  {!   !} ⟩
@@ -298,11 +298,11 @@ compHNat {D = D}{E = E}{F = F}{G} {J}{K} η ε =
        --G -->  --K-->
       
 
-      F        J             JF
+      F        J             JF X
       |        |             |
-      η        ε          compHNat η ε
+      η        ε          compHNat η ε X
       ↓        ↓             ↓
-      G        K             KG
+      G        K             KG X
 
 -}
 
@@ -345,6 +345,6 @@ module FunctorCoproduct (cop : Coproducts C) where
  -- Ejercicio: Leer la definición de coproducto de funtores _+F_
  -- y definir copairF 
 
- copairF : ∀{F G H K} →
-          (NatT {C = D} F H) → (NatT G K) → NatT (F +F G) (H +F K)
- copairF = {!   !}  
+--  copairF : ∀{F G H K} →
+--           (NatT {C = D} F H) → (NatT G K) → NatT (F +F G) (H +F K)
+--  copairF = {!   !}  
