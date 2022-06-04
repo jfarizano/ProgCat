@@ -280,17 +280,24 @@ compHNat : ∀{F G : Fun C D}{J K : Fun D E}
 compHNat {D = D}{E = E}{F = F}{G} {J}{K} η ε = 
    let open Cat E
        open Cat D using () renaming (_∙_ to _∙D_)
-   in natural (λ X → {!   !} ∙ {!   !})
+   in natural (λ X → cmp ε (OMap G X) ∙ HMap J (cmp η X))
               λ {X Y f} → 
               proof 
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}  ≅⟨  {!   !} ⟩
-              {!   !}
+                (HMap (K ○ G) f ∙ (cmp ε (OMap G X) ∙ HMap J (cmp η X)))  
+              ≅⟨  sym ass ⟩
+                ((HMap (K ○ G) f ∙ cmp ε (OMap G X)) ∙ HMap J (cmp η X))  
+              ≅⟨  congl (nat ε) ⟩
+                ((cmp ε (OMap G Y) ∙ HMap J (HMap G f)) ∙ HMap J (cmp η X))  
+              ≅⟨  ass ⟩
+                (cmp ε (OMap G Y) ∙ (HMap J (HMap G f) ∙ HMap J (cmp η X))) 
+              ≅⟨  congr (sym (fcomp J)) ⟩
+                (cmp ε (OMap G Y) ∙ HMap J (HMap G f ∙D cmp η X))  
+              ≅⟨  congr (cong (HMap J) (nat η)) ⟩
+                (cmp ε (OMap G Y) ∙ HMap J (cmp η Y ∙D HMap F f))  
+              ≅⟨ congr (fcomp J) ⟩
+                (cmp ε (OMap G Y) ∙ HMap J (cmp η Y) ∙ HMap J (HMap F f))  
+              ≅⟨  sym ass ⟩
+                ((cmp ε (OMap G Y) ∙ HMap J (cmp η Y)) ∙ HMap (J ○ F) f)
               ∎
 
 {-     --F-->   --J--> 
@@ -347,4 +354,4 @@ module FunctorCoproduct (cop : Coproducts C) where
 
 --  copairF : ∀{F G H K} →
 --           (NatT {C = D} F H) → (NatT G K) → NatT (F +F G) (H +F K)
---  copairF = {!   !}  
+--  copairF = {!   !}   
