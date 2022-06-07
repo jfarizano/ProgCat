@@ -34,7 +34,7 @@ record CCC : Set (a ⊔ b) where
 module Properties (isCCC : CCC) where
   open CCC isCCC
   open import Categories.Products.Properties hasProducts 
-         using (comp-pair ; iden-pair)
+         using (comp-pair ; iden-pair ; iden-comp-pair)
   
  
   {- Ejercicio: map⇒ preserva identidades. -}
@@ -72,7 +72,7 @@ module Properties (isCCC : CCC) where
 
   {- Ejercicio: probar que para todo objeto B,  B⇒_ define un endofunctor -}
 
-  open import Functors
+  open import Functors 
   endo-B⇒ : ∀{B} → Fun C C
   endo-B⇒ {B} = functor (B ⇒_) 
                          map⇒
@@ -101,6 +101,27 @@ module Properties (isCCC : CCC) where
     Ejercicio: probar que nuestra definición implica la de más arriba. 
   -}
   curry-exp : ∀{X Y Z} {f : Hom (X × Y) Z} →  apply ∙ pair (curry f) iden ≅ f
-  curry-exp {f = f} = {!   !}
-
+  curry-exp {f = f} = proof 
+                        apply ∙ pair (curry f) iden
+                      ≅⟨ sym lawcurry1 ⟩
+                        uncurry (curry (apply ∙ pair (curry f) iden))
+                      ≅⟨ cong (λ x → uncurry (curry x)) (sym idl) ⟩
+                        uncurry (curry (iden ∙ apply ∙ pair (curry f) iden))
+                      ≅⟨ cong uncurry (sym nat-curry) ⟩
+                        uncurry (curry (iden ∙ uncurry iden) ∙ curry apply ∙ curry f)
+                      ≅⟨ cong uncurry (cong (λ x → curry x ∙ curry apply ∙ curry f) idl) ⟩
+                        uncurry (curry (uncurry iden) ∙ curry apply ∙ curry f)
+                      ≅⟨ cong (λ x → uncurry (x ∙ curry apply ∙ curry f)) lawcurry2 ⟩
+                        uncurry (iden ∙ curry apply ∙ curry f)
+                      ≅⟨ cong uncurry idl ⟩
+                        uncurry (curry apply ∙ curry f)
+                      ≅⟨ refl ⟩
+                        uncurry (curry (uncurry iden) ∙ curry f)
+                      ≅⟨ cong (λ x → uncurry (x ∙ curry f)) lawcurry2 ⟩
+                        uncurry (iden ∙ curry f)
+                      ≅⟨ cong uncurry idl ⟩
+                        uncurry (curry f)
+                      ≅⟨ lawcurry1 ⟩
+                        f
+                      ∎
   
