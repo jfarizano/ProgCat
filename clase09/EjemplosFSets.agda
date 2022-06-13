@@ -28,10 +28,11 @@ open import Data.Sum renaming (_⊎_ to _+_) hiding ([_,_])
  *No* definir functores usando el constructor de funtores.
   -}
 
+
 -- Nat X = 1 + X
 Nat : Fun Sets Sets
-Nat = ?
-
+Nat = (K ⊤) +F IdF
+{-
 module Nat where
 
   open Fun Nat
@@ -46,10 +47,10 @@ module Nat where
 
   sucN : μF → μF
   sucN x = {!   !}
-
+-}
 --------------------------------------------------
 {- Probar que los naturales, junto con foldℕ son el álgebra inicial de Nat -}
-
+{-
   foldℕ : ∀{A : Set} → (A → A) → A → ℕ → A
   foldℕ s z zero = z
   foldℕ s z (suc n) = s (foldℕ s z n)
@@ -80,13 +81,12 @@ module Nat where
 
   initial-ℕ : Initial (F-AlgebraCat) μNat
   initial-ℕ = {!   !}
-
+-}
 --------------------------------------------------
 {- Definir un functor cuya algebra inicial sea las listas.
 -}
-
 L : (A : Set) → Fun (Sets {lzero}) (Sets {lzero})
-L A = ?
+L A = K ⊤ +F (K A ×F IdF)
 
 module Listas (A : Set) where
 
@@ -99,6 +99,7 @@ module Listas (A : Set) where
   data List (A : Set) : Set where
      Nil : List A
      Cons : A → List A → List A
+
 
 {-
    Definir constructores, y probar que
@@ -117,6 +118,7 @@ module Listas (A : Set) where
   length : μF → ℕ
   length = {!   !}
 
+{-
 --------------------------------------------------
 {- Probar que los las Listas junto con foldr son el
    álgebra inicial de L -}
@@ -144,4 +146,4 @@ module Listas (A : Set) where
 
   initial-List : Initial (F-AlgebraCat) μList
   initial-List = {!   !}
-  
+  -}

@@ -321,11 +321,19 @@ compHNat-assoc : ∀{a1 b1 a2 b2 a3 b3 a4 b4}
                     {F G : Fun C1 C2}{J K : Fun C2 C3}{L M : Fun C3 C4} 
                  →  (η1 : NatT F G)(η2 : NatT J K)(η3 : NatT L M)
                  →  compHNat (compHNat η1 η2) η3 ≅ compHNat η1 (compHNat η2 η3)
-compHNat-assoc {C3 = C3}{C4 = C4}{F}{G}{J}{K}{L}{M} (natural cmp1 _) (natural cmp2 _) (natural cmp3 _) =
+compHNat-assoc {C3 = C3}{C4 = C4}{F}{G}{J}{K}{L}{M} (natural cmp1 nat1) (natural cmp2 _) (natural cmp3 _) =
                    let open Cat C4 renaming (_∙_ to  _∙4_)
                        open Cat C3 using () renaming (_∙_ to  _∙3_)                         
                    in
-                     {!   !}
+                     NatTEq2 (Functor-Eq refl refl) 
+                             (Functor-Eq refl refl) 
+                             (ext (λ x → proof 
+                                          (cmp3 (OMap K (OMap G x)) ∙4 HMap L (cmp2 (OMap G x) ∙3 HMap J (cmp1 x)))
+                                         ≅⟨ congr (fcomp L) ⟩
+                                          (cmp3 (OMap K (OMap G x)) ∙4 HMap L (cmp2 (OMap G x)) ∙4 HMap L (HMap J (cmp1 x)))
+                                         ≅⟨ sym ass ⟩
+                                          ((cmp3 (OMap K (OMap G x)) ∙4 HMap L (cmp2 (OMap G x))) ∙4 HMap L (HMap J (cmp1 x)))
+                                         ∎))
 
 -- ley de intercambio
 interchange : ∀ {F G H : Fun C D}{I J K : Fun D E}
@@ -337,7 +345,23 @@ interchange {D = D}{E = E}{F = F}{G}{H}{I = I}{J} (natural α _) (natural β _) 
               open Cat D using () renaming (_∙_ to _∙D_)
               open Cat E
            in
-           {!   !}
+           NatTEq (ext (λ x → proof 
+                                ((δ (OMap H x) ∙ γ (OMap H x)) ∙ HMap I (β x ∙D α x))
+                              ≅⟨ congr (fcomp I) ⟩
+                                ((δ (OMap H x) ∙ γ (OMap H x)) ∙ HMap I (β x) ∙ HMap I (α x))
+                              ≅⟨ sym ass ⟩
+                                (((δ (OMap H x) ∙ γ (OMap H x)) ∙ HMap I (β x)) ∙ HMap I (α x))
+                              ≅⟨ congl ass ⟩
+                                ((δ (OMap H x) ∙ γ (OMap H x) ∙ HMap I (β x)) ∙ HMap I (α x))
+                              ≅⟨ congl (congr (sym natγ)) ⟩
+                                ((δ (OMap H x) ∙ HMap J (β x) ∙ γ (OMap G x)) ∙ HMap I (α x))
+                              ≅⟨ congl (sym ass) ⟩
+                                (((δ (OMap H x) ∙ HMap J (β x)) ∙ γ (OMap G x)) ∙ HMap I (α x))
+                              ≅⟨ ass ⟩
+                                ((δ (OMap H x) ∙ HMap J (β x)) ∙ γ (OMap G x) ∙ HMap I (α x))
+                              ∎
+                              ))
+
 
 open import Categories.Coproducts
 
@@ -352,6 +376,22 @@ module FunctorCoproduct (cop : Coproducts C) where
  -- Ejercicio: Leer la definición de coproducto de funtores _+F_
  -- y definir copairF 
 
---  copairF : ∀{F G H K} →
---           (NatT {C = D} F H) → (NatT G K) → NatT (F +F G) (H +F K)
---  copairF = {!   !}   
+ copairF : ∀{F G H K} →
+          (NatT {C = D} F H) → (NatT G K) → NatT (F +F G) (H +F K)
+ copairF {F = F} {G} {H} {K} (natural α natα) (natural β natβ) = 
+  natural (λ X → copair (α X) (β X)) 
+          λ {X Y f} → proof 
+                        (HMap (H +F K) f ∙ copair (α X) (β X))
+                      ≅⟨ refl ⟩
+                        (copair (HMap H f) (HMap K f) ∙ copair (α X) (β X))
+                      ≅⟨ fusion-cop ⟩
+                        [ (inl ∙ HMap H f) ∙ α X , (inr ∙ HMap K f) ∙ β X ]
+                      ≅⟨ cong₂ [_,_] ass ass ⟩
+                        [ inl ∙ (HMap H f ∙ α X) , inr ∙ (HMap K f ∙ β X) ]
+                      ≅⟨ cong₂ copair natα natβ ⟩
+                        copair (α Y ∙ HMap F f) (β Y ∙ HMap G f)
+                      ≅⟨ comp-cop ⟩
+                        (copair (α Y) (β Y) ∙ copair (HMap F f) (HMap G f))
+                      ≅⟨ refl ⟩
+                        (copair (α Y) (β Y) ∙ HMap (F +F G) f)
+                      ∎
