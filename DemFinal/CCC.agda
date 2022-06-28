@@ -16,7 +16,7 @@ open Products hasProducts
 record CCC : Set (a ⊔ b) where
   infix 4 _⇒_
   field
-     _⇒_ : Obj → Obj → Obj
+     _⇒_ : Obj → Obj → Obj -- Y ⇒ X == X^Y
      curry : ∀{X Y Z} → Hom (X × Y) Z → Hom X (Y ⇒ Z)
      uncurry : ∀{X Y Z} → Hom X (Y ⇒ Z) → Hom (X × Y) Z
      lawcurry1 : ∀{X Y Z}{f : Hom (X × Y) Z} → uncurry (curry f) ≅ f
@@ -25,9 +25,8 @@ record CCC : Set (a ⊔ b) where
                →  curry (h ∙ uncurry iden) ∙ curry x ∙ f ≅ curry (h ∙ x ∙ pair f iden)
 
   apply : ∀{Y Z} → Hom ((Y ⇒ Z) × Y) Z
-  apply = uncurry iden    
+  apply = uncurry iden
 
-  {- Ejercicio: completar la definición -}
   map⇒ : ∀{X Y Z} → Hom X Z → Hom (Y ⇒ X) (Y ⇒ Z)
   map⇒ f = curry (f ∙ apply)
 
@@ -37,7 +36,7 @@ module Properties (isCCC : CCC) where
          using (comp-pair ; iden-pair ; iden-comp-pair)
   
  
-  {- Ejercicio: map⇒ preserva identidades. -}
+  {- map⇒ preserva identidades. -}
   map⇒iden : ∀{X Y} → map⇒ {X} {Y} {X} (iden {X}) ≅ iden {Y ⇒ X}
   map⇒iden = proof 
                 map⇒ iden
@@ -51,7 +50,7 @@ module Properties (isCCC : CCC) where
                 iden
               ∎
 
-  {- Ejercicio: Propiedad de curry con map⇒. Caso particular de nat-curry, con f = iden. -}
+  {- Propiedad de curry con map⇒. Caso particular de nat-curry, con f = iden. -}
   curry-prop : ∀{X Y Z Z'}{f : Hom (X × Y) Z}{g : Hom Z Z'}
               →  map⇒ g ∙ curry f ≅ curry (g ∙ f)
   curry-prop {f = f} {g} = proof 
@@ -70,7 +69,7 @@ module Properties (isCCC : CCC) where
                             curry (g ∙ f)
                            ∎
 
-  {- Ejercicio: probar que para todo objeto B,  B⇒_ define un endofunctor -}
+  {- Para todo objeto B,  B⇒_ define un endofunctor -}
 
   open import Functors 
   endo-B⇒ : ∀{B} → Fun C C
@@ -97,8 +96,6 @@ module Properties (isCCC : CCC) where
     Un exponencial entre A y B es un objeto B ⇒ A, y un morfismo apply : (B ⇒ A) × B → A tal que
     para cada f : C × B → A existe un único morfismo curry f : C → (B ⇒ A) tal que 
         apply ∙ pair (curry f) iden ≅ f  
-
-    Ejercicio: probar que nuestra definición implica la de más arriba. 
   -}
   curry-exp : ∀{X Y Z} {f : Hom (X × Y) Z} →  apply ∙ pair (curry f) iden ≅ f
   curry-exp {f = f} = proof 

@@ -18,13 +18,13 @@ open import Library hiding (_×_)
 open Cat C
 open Products hasProducts
 open Coproducts hasCoproducts
-open Initial hasInitial renaming (i to fInit ; law to lawInit)
+open Initial hasInitial renaming (law to lawInit)
 
 undistr : ∀{X Y Z : Obj} → Hom ((X × Y) + (X × Z)) (X × (Y + Z))
 undistr = [  ⟨ π₁ , inl ∙ π₂ ⟩ , ⟨ π₁ , inr ∙ π₂ ⟩ ]
 
 unnull : ∀{X : Obj} → Hom I (X × I)
-unnull = fInit
+unnull = i 
 
 record Dist : Set (a ⊔ b) where
   field
