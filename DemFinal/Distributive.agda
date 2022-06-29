@@ -20,8 +20,8 @@ open Products hasProducts
 open Coproducts hasCoproducts
 open Initial hasInitial renaming (law to lawInit)
 
-undistr : ∀{X Y Z : Obj} → Hom ((X × Y) + (X × Z)) (X × (Y + Z))
-undistr = [  ⟨ π₁ , inl ∙ π₂ ⟩ , ⟨ π₁ , inr ∙ π₂ ⟩ ]
+undistr : ∀{X Y Z : Obj} → Hom ((X × Z) + (Y × Z)) ((X + Y) × Z)
+undistr = [ ⟨ inl ∙ π₁ , π₂ ⟩ , ⟨ inr ∙ π₁ , π₂ ⟩ ]
 
 unnull : ∀{X : Obj} → Hom I (X × I)
 unnull = i 

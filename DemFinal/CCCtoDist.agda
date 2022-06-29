@@ -19,6 +19,8 @@ module DemFinal.CCCtoDist {a}{b}{C : Cat {a}{b}}
 open Cat C
 
 open Products hasProducts renaming (law1 to law1Prod ; law2 to law2Prod ; law3 to law3Prod)
+open import Categories.Products.Properties hasProducts
+
 open Coproducts hasCoproducts renaming (law1 to law1Coprod ; law2 to law2Coprod ; law3 to law3Coprod)
 open Initial hasInitial renaming (law to lawInit)
 open Terminal hasTerminal renaming (law to lawTerm)
@@ -28,14 +30,25 @@ open import DemFinal.Distributive hasProducts hasCoproducts I hasInitial
 
 
 CCC⇒Dist : CCC → Dist
-CCC⇒Dist ccc = record { distr = iso {!   !}
-                                     {!   !} 
+CCC⇒Dist ccc = record { distr = iso (uncurry [ (curry inl) , (curry inr) ])
+                                     (proof 
+                                        [ ⟨ inl ∙ π₁ , π₂ ⟩ , ⟨ inr ∙ π₁ , π₂ ⟩ ] ∙ uncurry [ curry inl , curry inr ]
+                                      ≅⟨ {!   !} ⟩
+                                        {!   !}
+                                      ≅⟨ {!   !} ⟩
+                                        {!   !}
+                                      ≅⟨ {!   !} ⟩
+                                        {!   !}
+                                      ≅⟨ {!   !} ⟩
+                                        {!   !}
+                                      ≅⟨ {!   !} ⟩
+                                        iden
+                                      ∎) 
                                      {!   !} ; 
-                         null = iso π₂ 
+                         null = λ {X} →
+                                iso π₂
                                     (proof 
                                       i ∙ π₂
-                                     ≅⟨ {!   !} ⟩
-                                      {!   !}
                                      ≅⟨ {!   !} ⟩
                                       {!   !}
                                      ≅⟨ {!   !} ⟩
@@ -53,5 +66,3 @@ CCC⇒Dist ccc = record { distr = iso {!   !}
                                       iden
                                      ∎) }
                 where open CCC ccc
-                      e : ∀{X Y Z : Obj} → Hom X ((Y + Z) ⇒ (X × Y + X × Z))
-                      e = {!   !}
