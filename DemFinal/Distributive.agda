@@ -20,13 +20,13 @@ open Products hasProducts
 open Coproducts hasCoproducts
 open Initial hasInitial renaming (law to lawInit)
 
-undistr : ∀{X Y Z : Obj} → Hom ((X × Z) + (Y × Z)) ((X + Y) × Z)
-undistr = [ ⟨ inl ∙ π₁ , π₂ ⟩ , ⟨ inr ∙ π₁ , π₂ ⟩ ]
+undistl : ∀{X Y Z : Obj} → Hom ((X × Z) + (Y × Z)) ((X + Y) × Z)
+undistl = [ ⟨ inl ∙ π₁ , π₂ ⟩ , ⟨ inr ∙ π₁ , π₂ ⟩ ]
 
-unnull : ∀{X : Obj} → Hom I (X × I)
-unnull = i 
+unnull : ∀{X : Obj} → Hom I (I × X)
+unnull = ⟨ iden , i ⟩
 
 record Dist : Set (a ⊔ b) where
   field
-    distr : ∀{X Y Z} → Iso C (undistr {X} {Y} {Z})
+    distl : ∀{X Y Z} → Iso C (undistl {X} {Y} {Z})
     null : ∀{X} → Iso C (unnull {X})
