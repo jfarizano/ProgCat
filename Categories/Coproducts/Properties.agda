@@ -24,7 +24,7 @@ fusion {f = f}{g}{h} = law3 (trans ass (congr law1)) (trans ass (congr law2))
 
 
 fusion-cop : ∀{A B C D E}{f : Hom A B}{g : Hom C D}{h : Hom B E}{i : Hom D E} 
-          → [ h , i ] ∙ (copair f g) ≅ [ h ∙ f , i ∙ g ]
+          → [ h , i ] ∙ (copair f g)  ≅ [ h ∙ f , i ∙ g ]
 fusion-cop {f = f}{g}{h}{i}= law3 (proof
                    ([ h , i ] ∙ [ inl ∙ f , inr ∙ g ]) ∙ inl
                 ≅⟨ congl fusion ⟩
