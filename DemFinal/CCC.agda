@@ -35,7 +35,36 @@ module Properties (isCCC : CCC) where
   open import Categories.Products.Properties hasProducts 
          using (comp-pair ; iden-pair ; iden-comp-pair)
   
- 
+  {- Una definición alternativa de exponencial se puede dar en base al morfismo apply:
+  Un exponencial entre A y B es un objeto B ⇒ A, y un morfismo apply : (B ⇒ A) × B → A tal que
+  para cada f : C × B → A existe un único morfismo curry f : C → (B ⇒ A) tal que 
+      apply ∙ pair (curry f) iden ≅ f  
+  -}
+  curry-exp : ∀{X Y Z} {f : Hom (X × Y) Z} →  apply ∙ pair (curry f) iden ≅ f
+  curry-exp {f = f} = proof 
+                        apply ∙ pair (curry f) iden
+                      ≅⟨ sym lawcurry1 ⟩
+                        uncurry (curry (apply ∙ pair (curry f) iden))
+                      ≅⟨ cong (λ x → uncurry (curry x)) (sym idl) ⟩
+                        uncurry (curry (iden ∙ apply ∙ pair (curry f) iden))
+                      ≅⟨ cong uncurry (sym nat-curry) ⟩
+                        uncurry (curry (iden ∙ uncurry iden) ∙ curry apply ∙ curry f)
+                      ≅⟨ cong uncurry (cong (λ x → curry x ∙ curry apply ∙ curry f) idl) ⟩
+                        uncurry (curry (uncurry iden) ∙ curry apply ∙ curry f)
+                      ≅⟨ cong (λ x → uncurry (x ∙ curry apply ∙ curry f)) lawcurry2 ⟩
+                        uncurry (iden ∙ curry apply ∙ curry f)
+                      ≅⟨ cong uncurry idl ⟩
+                        uncurry (curry apply ∙ curry f)
+                      ≅⟨ refl ⟩
+                        uncurry (curry (uncurry iden) ∙ curry f)
+                      ≅⟨ cong (λ x → uncurry (x ∙ curry f)) lawcurry2 ⟩
+                        uncurry (iden ∙ curry f)
+                      ≅⟨ cong uncurry idl ⟩
+                        uncurry (curry f)
+                      ≅⟨ lawcurry1 ⟩
+                        f
+                      ∎
+
   {- map⇒ preserva identidades. -}
   map⇒iden : ∀{X Y} → map⇒ {X} {Y} {X} (iden {X}) ≅ iden {Y ⇒ X}
   map⇒iden = proof 
@@ -93,59 +122,6 @@ module Properties (isCCC : CCC) where
                               iden ∙ f
                               ≅⟨ idl ⟩
                               f ∎)
-
-  {- Para todo objeto B,  B⇒_ define un endofunctor -}
-
-  open import Functors 
-  endo-B⇒ : ∀{B} → Fun C C
-  endo-B⇒ {B} = functor (B ⇒_) 
-                         map⇒
-                         map⇒iden
-                         dem
-                 where
-                  dem : {X Y Z : Obj} {f : Hom Y Z} {g : Hom X Y} →
-                        map⇒ (f ∙ g) ≅ map⇒ f ∙ map⇒ g
-                  dem {f = f} {g} = proof 
-                                      map⇒ (f ∙ g)
-                                    ≅⟨ refl ⟩
-                                      curry ((f ∙ g) ∙ apply)
-                                    ≅⟨ cong curry ass ⟩
-                                      curry (f ∙ (g ∙ apply))
-                                    ≅⟨ sym curry-prop ⟩
-                                      map⇒ f ∙ curry (g ∙ apply)
-                                    ≅⟨ refl ⟩
-                                      map⇒ f ∙ map⇒ g
-                                    ∎
-
-  {- Una definición alternativa de exponencial se puede dar en base al morfismo apply:
-    Un exponencial entre A y B es un objeto B ⇒ A, y un morfismo apply : (B ⇒ A) × B → A tal que
-    para cada f : C × B → A existe un único morfismo curry f : C → (B ⇒ A) tal que 
-        apply ∙ pair (curry f) iden ≅ f  
-  -}
-  curry-exp : ∀{X Y Z} {f : Hom (X × Y) Z} →  apply ∙ pair (curry f) iden ≅ f
-  curry-exp {f = f} = proof 
-                        apply ∙ pair (curry f) iden
-                      ≅⟨ sym lawcurry1 ⟩
-                        uncurry (curry (apply ∙ pair (curry f) iden))
-                      ≅⟨ cong (λ x → uncurry (curry x)) (sym idl) ⟩
-                        uncurry (curry (iden ∙ apply ∙ pair (curry f) iden))
-                      ≅⟨ cong uncurry (sym nat-curry) ⟩
-                        uncurry (curry (iden ∙ uncurry iden) ∙ curry apply ∙ curry f)
-                      ≅⟨ cong uncurry (cong (λ x → curry x ∙ curry apply ∙ curry f) idl) ⟩
-                        uncurry (curry (uncurry iden) ∙ curry apply ∙ curry f)
-                      ≅⟨ cong (λ x → uncurry (x ∙ curry apply ∙ curry f)) lawcurry2 ⟩
-                        uncurry (iden ∙ curry apply ∙ curry f)
-                      ≅⟨ cong uncurry idl ⟩
-                        uncurry (curry apply ∙ curry f)
-                      ≅⟨ refl ⟩
-                        uncurry (curry (uncurry iden) ∙ curry f)
-                      ≅⟨ cong (λ x → uncurry (x ∙ curry f)) lawcurry2 ⟩
-                        uncurry (iden ∙ curry f)
-                      ≅⟨ cong uncurry idl ⟩
-                        uncurry (curry f)
-                      ≅⟨ lawcurry1 ⟩
-                        f
-                      ∎
   
     --Propiedad de uncurry.
   nat-uncurry : ∀{X X' Y Z Z'} → {f : Hom X' X}{h : Hom Z Z'}{x : Hom X (Y ⇒ Z)}
@@ -198,3 +174,25 @@ module Properties (isCCC : CCC) where
                                 uncurry (map⇒ g ∙ f ∙ iden)
                                 ≅⟨ cong (λ x → uncurry (map⇒ g ∙ x)) idr ⟩
                                 uncurry (map⇒ g ∙ f) ∎
+
+  {- Para todo objeto B,  B⇒_ define un endofunctor -}
+  open import Functors 
+  endo-B⇒ : ∀{B} → Fun C C
+  endo-B⇒ {B} = functor (B ⇒_) 
+                         map⇒
+                         map⇒iden
+                         dem
+                 where
+                  dem : {X Y Z : Obj} {f : Hom Y Z} {g : Hom X Y} →
+                        map⇒ (f ∙ g) ≅ map⇒ f ∙ map⇒ g
+                  dem {f = f} {g} = proof 
+                                      map⇒ (f ∙ g)
+                                    ≅⟨ refl ⟩
+                                      curry ((f ∙ g) ∙ apply)
+                                    ≅⟨ cong curry ass ⟩
+                                      curry (f ∙ (g ∙ apply))
+                                    ≅⟨ sym curry-prop ⟩
+                                      map⇒ f ∙ curry (g ∙ apply)
+                                    ≅⟨ refl ⟩
+                                      map⇒ f ∙ map⇒ g
+                                    ∎
