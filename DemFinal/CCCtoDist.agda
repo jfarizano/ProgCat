@@ -29,76 +29,23 @@ open Terminal hasTerminal renaming (law to lawTerm)
 open import DemFinal.CCC hasProducts T hasTerminal
 open import DemFinal.Distributive hasProducts hasCoproducts I hasInitial
 
--- De clase 6
-intercambio : ∀{A B C D}
-         → (f : Hom A C)(g : Hom B C)
-         → (h : Hom A D)(k : Hom B D)
-         → ⟨ [ f , g ] , [ h , k ] ⟩ ≅ [ ⟨ f , h ⟩ , ⟨ g , k ⟩ ]
-intercambio f g h k = law3Coprod (law3Prod (proof 
-                                    π₁ ∙ (⟨ [ f , g ] , [ h , k ] ⟩ ∙ inl)
-                                   ≅⟨ sym ass ⟩
-                                    (π₁ ∙ ⟨ [ f , g ] , [ h , k ] ⟩) ∙ inl
-                                   ≅⟨ congl law1Prod ⟩
-                                    [ f , g ] ∙ inl
-                                   ≅⟨ law1Coprod ⟩
-                                    f
-                                   ∎)
-                                   
-                                  (proof 
-                                    π₂ ∙ (⟨ [ f , g ] , [ h , k ] ⟩ ∙ inl)
-                                   ≅⟨ sym ass ⟩
-                                    (π₂ ∙ ⟨ [ f , g ] , [ h , k ] ⟩) ∙ inl
-                                   ≅⟨ congl law2Prod ⟩
-                                    [ h , k ] ∙ inl
-                                   ≅⟨ law1Coprod ⟩
-                                    h
-                                   ∎))
-                                   
-                           (law3Prod (proof 
-                                    π₁ ∙ (⟨ [ f , g ] , [ h , k ] ⟩ ∙ inr)
-                                   ≅⟨ sym ass ⟩
-                                    (π₁ ∙ ⟨ [ f , g ] , [ h , k ] ⟩) ∙ inr
-                                   ≅⟨ congl law1Prod ⟩
-                                    [ f , g ] ∙ inr
-                                   ≅⟨ law2Coprod ⟩
-                                    g
-                                   ∎)
-                                   
-                                  (proof 
-                                    π₂ ∙ (⟨ [ f , g ] , [ h , k ] ⟩ ∙ inr)
-                                   ≅⟨ sym ass ⟩
-                                    (π₂ ∙ ⟨ [ f , g ] , [ h , k ] ⟩) ∙ inr
-                                   ≅⟨ congl law2Prod ⟩
-                                    [ h , k ] ∙ inr
-                                   ≅⟨ law2Coprod ⟩
-                                    k
-                                   ∎) )
-
 CCC⇒Dist : CCC → Dist
 CCC⇒Dist ccc = record { distl = iso (uncurry [ curry inl , curry inr ])
                                      (proof 
-                                        [ ⟨ inl ∙ π₁ , π₂ ⟩ , ⟨ inr ∙ π₁ , π₂ ⟩ ] ∙ uncurry [ curry inl , curry inr ]
-                                      ≅⟨ congl (sym (intercambio (inl ∙ π₁) (inr ∙ π₁) π₂ π₂)) ⟩
-                                        ⟨ [ inl ∙ π₁ , inr ∙ π₁ ] , [ π₂ , π₂ ] ⟩ ∙ uncurry [ curry inl , curry inr ]
-                                      ≅⟨ fusionProd ⟩
-                                        ⟨ [ inl ∙ π₁ , inr ∙ π₁ ] ∙ uncurry [ curry inl , curry inr ] , [ π₂ , π₂ ] ∙ uncurry [ curry inl , curry inr ] ⟩
-                                      ≅⟨ {!   !} ⟩
-                                        {!   !}
-                                      ≅⟨ {!   !} ⟩
-                                        {!   !}
-                                      ≅⟨ {!   !} ⟩
+                                        undistl ∙ uncurry h
+                                      ≅⟨ uncurry-prop₂ ⟩
+                                        uncurry (map⇒ undistl ∙ h)
+                                      ≅⟨ cong uncurry lema ⟩
+                                        uncurry (curry iden)
+                                      ≅⟨ lawcurry1 ⟩
                                         iden
                                       ∎) 
                                      (proof 
-                                        uncurry [ curry inl , curry inr ] ∙ [ ⟨ inl ∙ π₁ , π₂ ⟩ , ⟨ inr ∙ π₁ , π₂ ⟩ ]
+                                        uncurry h ∙ [ ⟨ inl ∙ π₁ , π₂ ⟩ , ⟨ inr ∙ π₁ , π₂ ⟩ ]
                                       ≅⟨ fusionCoprod ⟩
-                                        [ uncurry [ curry inl , curry inr ] ∙ ⟨ inl ∙ π₁ , π₂ ⟩ , uncurry [ curry inl , curry inr ] ∙ ⟨ inr ∙ π₁ , π₂ ⟩ ]
-                                      ≅⟨ {!   !} ⟩
-                                        {!   !}
-                                      ≅⟨ {!   !} ⟩
-                                        {!   !}
-                                      ≅⟨ {!   !} ⟩
-                                        {!   !}
+                                        [ uncurry h ∙ ⟨ inl ∙ π₁ , π₂ ⟩ , uncurry h ∙ ⟨ inr ∙ π₁ , π₂ ⟩ ]
+                                      ≅⟨ cong₂ [_,_] (lema2 law1Coprod) (lema2 law2Coprod) ⟩
+                                        [ inl , inr ]
                                       ≅⟨ {!   !} ⟩
                                         iden
                                       ∎) ; 
@@ -107,37 +54,36 @@ CCC⇒Dist ccc = record { distl = iso (uncurry [ curry inl , curry inr ])
                                     -- unnull . null
                                     (proof 
                                       ⟨ iden , i ⟩ ∙ uncurry i
-                                     ≅⟨ fusionProd ⟩
-                                      ⟨ iden ∙ uncurry i , i ∙ uncurry i ⟩
+                                     ≅⟨ uncurry-prop₂ ⟩
+                                      uncurry (map⇒ ⟨ iden , i ⟩ ∙ i)
                                      ≅⟨ {!   !} ⟩
-                                      {!   !}
+                                      uncurry i
                                      ≅⟨ {!   !} ⟩
-                                      {!   !}
-                                     ≅⟨ {!   !} ⟩
-                                      {!   !}
-                                     ≅⟨ {!   !} ⟩
-                                      {!   !}
-                                     ≅⟨ {!   !} ⟩
-                                      {!   !}
-                                     ≅⟨ {!   !} ⟩
+                                      uncurry (curry iden)
+                                     ≅⟨ lawcurry1 ⟩
                                       iden
                                      ∎)
                                     -- null . unnull
                                     (proof 
                                       uncurry i ∙ ⟨ iden , i ⟩
                                      ≅⟨ {!   !} ⟩
-                                      {!   !}
-                                     ≅⟨ {!   !} ⟩
-                                      {!   !}
-                                     ≅⟨ {!   !} ⟩
-                                      {!   !}
-                                     ≅⟨ {!   !} ⟩
-                                      {!   !}
+                                      i
                                      ≅⟨ {!   !} ⟩
                                       iden
                                      ∎)
                                     
                        }
-                where open CCC ccc                
+                where open CCC ccc
+                      open Properties ccc 
 
+                      h : ∀{X Y Z} → Hom (Y + Z) (X ⇒ (Y × X + Z × X))
+                      h = [ curry inl , curry inr  ]
+                      
+                      lema : ∀{X Y Z} → map⇒ undistl ∙ h  ≅ curry {X + Y} {Z} {(X + Y) × Z} iden
+                      lema = {!   !}   
+
+                      lema2 : ∀{X X' Y Z}{f : Hom X (Y ⇒ Z)}{g : Hom (X' × Y) Z}{h : Hom X' X}
+                              → (f ∙ h ≅ curry g)
+                              → (uncurry f) ∙ ⟨ h ∙ π₁ , π₂ ⟩ ≅ g       
+                      lema2 = {!   !}
     
