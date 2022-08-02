@@ -31,7 +31,7 @@ open import DemFinal.CCC hasProducts T hasTerminal
 open import DemFinal.Distributive hasProducts hasCoproducts I hasInitial
 
 CCC⇒Dist : CCC → Dist
-CCC⇒Dist ccc = record { distl = iso (uncurry [ (curry inl) , curry inr ])
+CCC⇒Dist ccc = record { distl = iso (uncurry [ (curry inl) , (curry inr) ])
                                      -- undistl . distl = iden
                                      (proof 
                                         undistl ∙ uncurry h
@@ -48,6 +48,10 @@ CCC⇒Dist ccc = record { distl = iso (uncurry [ (curry inl) , curry inr ])
                                       ≅⟨ fusionCoprod ⟩
                                         [ uncurry h ∙ ⟨ inl ∙ π₁ , π₂ ⟩ , uncurry h ∙ ⟨ inr ∙ π₁ , π₂ ⟩ ]
                                       ≅⟨ cong₂ [_,_] (lema2 law1Coprod) (lema2 law2Coprod) ⟩
+                                      -- Acá: h = [ curry inl , curry inr ]
+                                      -- En el lema: f = h, h = inl/inr, g=inl/inr
+                                      -- Por law1Coprod: ([ curry inl , curry inr ] . inl = curry inl)
+                                      -- Por law2Coprod: ([ curry inl , curry inr ] . inr = curry inr)
                                         [ inl , inr ]
                                       ≅⟨ sym (law3Coprod idl idl) ⟩
                                         iden
@@ -59,18 +63,22 @@ CCC⇒Dist ccc = record { distl = iso (uncurry [ (curry inl) , curry inr ])
                                      ≅⟨ uncurry-prop₂ ⟩
                                       uncurry (map⇒ ⟨ iden , i ⟩ ∙ i)
                                      ≅⟨ cong uncurry (sym lawInit) ⟩
+                                      -- (map⇒ ⟨ iden , i ⟩ ∙ i) : Hom I (X ⇒ (I × X))
                                       uncurry i
                                      ≅⟨ cong uncurry lawInit ⟩
+                                      -- curry iden : Hom I (X ⇒ (I × X))
                                       uncurry (curry iden)
                                      ≅⟨ lawcurry1 ⟩
                                       iden
                                      ∎)
                                     -- null . unnull = iden
-                                    (proof 
-                                      uncurry i ∙ ⟨ iden , i ⟩
+                                    (proof
+                                      -- uncurry i . unnull: Hom I I 
+                                      uncurry i ∙ unnull
                                      ≅⟨ sym lawInit ⟩
                                       i
                                      ≅⟨ lawInit ⟩
+                                      -- iden : Hom I I
                                       iden
                                      ∎)
                                     
