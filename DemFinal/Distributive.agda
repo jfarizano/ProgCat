@@ -4,8 +4,6 @@ open import Categories.Coproducts
 open import Categories.Initial
 open import Categories.Iso
 
-
--- Para la demostración asumir que la CCC ya tiene inicial y coproducto
 module DemFinal.Distributive {a}{b}{C : Cat {a}{b}}
                                           (hasProducts : Products C)
                                           (hasCoproducts : Coproducts C)

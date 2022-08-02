@@ -6,6 +6,8 @@ open import Categories.Initial
 open import Categories.Terminal
 open import Categories.Iso
 
+-- CCC pide: Producto y terminal.
+-- Distributive pide: Producto, coproducto e inicial.
 module DemFinal.CCCtoDist {a}{b}{C : Cat {a}{b}}
                                         (hasProducts : Products C)
                                         (hasCoproducts : Coproducts C)
@@ -24,14 +26,13 @@ open Coproducts hasCoproducts renaming (law1 to law1Coprod ; law2 to law2Coprod 
 open import Categories.Coproducts.Properties hasCoproducts using () renaming (fusion to fusionCoprod)
 
 open Initial hasInitial renaming (law to lawInit)
-open Terminal hasTerminal renaming (law to lawTerm)
 
 open import DemFinal.CCC hasProducts T hasTerminal
 open import DemFinal.Distributive hasProducts hasCoproducts I hasInitial
 
 CCC⇒Dist : CCC → Dist
-CCC⇒Dist ccc = record { distl = iso (uncurry [ curry inl , curry inr ])
-                                     -- undistl . distl
+CCC⇒Dist ccc = record { distl = iso (uncurry [ (curry inl) , curry inr ])
+                                     -- undistl . distl = iden
                                      (proof 
                                         undistl ∙ uncurry h
                                       ≅⟨ uncurry-prop₂ ⟩
@@ -41,7 +42,7 @@ CCC⇒Dist ccc = record { distl = iso (uncurry [ curry inl , curry inr ])
                                       ≅⟨ lawcurry1 ⟩
                                         iden
                                       ∎)
-                                     -- distl . undistl
+                                     -- distl . undistl = iden
                                      (proof 
                                         uncurry h ∙ [ ⟨ inl ∙ π₁ , π₂ ⟩ , ⟨ inr ∙ π₁ , π₂ ⟩ ]
                                       ≅⟨ fusionCoprod ⟩
@@ -52,7 +53,7 @@ CCC⇒Dist ccc = record { distl = iso (uncurry [ curry inl , curry inr ])
                                         iden
                                       ∎) ; 
                          null = iso (uncurry i)
-                                    -- unnull . null
+                                    -- unnull . null = iden
                                     (proof 
                                       ⟨ iden , i ⟩ ∙ uncurry i
                                      ≅⟨ uncurry-prop₂ ⟩
@@ -64,7 +65,7 @@ CCC⇒Dist ccc = record { distl = iso (uncurry [ curry inl , curry inr ])
                                      ≅⟨ lawcurry1 ⟩
                                       iden
                                      ∎)
-                                    -- null . unnull
+                                    -- null . unnull = iden
                                     (proof 
                                       uncurry i ∙ ⟨ iden , i ⟩
                                      ≅⟨ sym lawInit ⟩
@@ -87,6 +88,7 @@ CCC⇒Dist ccc = record { distl = iso (uncurry [ curry inl , curry inr ])
                               [ map⇒ undistl ∙ curry inl , map⇒ undistl ∙ curry inr ]
                              ≅⟨ cong₂ [_,_] curry-prop curry-prop ⟩
                               [ curry (undistl ∙ inl) , curry (undistl ∙ inr) ]
+                             -- undistl = [ ⟨ inl ∙ π₁ , π₂ ⟩ , ⟨ inr ∙ π₁ , π₂ ⟩ ]
                              ≅⟨ cong₂ [_,_] (cong curry law1Coprod) (cong curry law2Coprod) ⟩
                               [ curry ⟨ inl ∙ π₁ , π₂ ⟩ , curry ⟨ inr ∙ π₁ , π₂ ⟩ ]
                              ≅⟨ cong₂ (λ x y → [ curry ⟨ inl ∙ π₁ , x ⟩ , curry ⟨ inr ∙ π₁ , y ⟩ ]) (sym idl) (sym idl) ⟩
@@ -104,7 +106,7 @@ CCC⇒Dist ccc = record { distl = iso (uncurry [ curry inl , curry inr ])
                              ≅⟨ idr ⟩
                               curry iden
                              ∎  
-
+                      -- -----
                       lema2 : ∀{X X' Y Z}{f : Hom X (Y ⇒ Z)}{g : Hom (X' × Y) Z}{h : Hom X' X}
                               → (f ∙ h ≅ curry g)
                               → (uncurry f) ∙ ⟨ h ∙ π₁ , π₂ ⟩ ≅ g       
